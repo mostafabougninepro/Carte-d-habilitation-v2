@@ -15,8 +15,7 @@ st.set_page_config(
 st.title("🎴 Générateur de Cartes d'Habilitation")
 
 
-# 1. Recherche intelligente dans TOUTES les feuilles du Registre
-@st.cache_data
+# Recherche directe dans le Registre Excel (sans cache pour lire les modifications instantanément)
 def get_agent_data(matricule):
     base_dir = os.path.dirname(os.path.abspath(__file__))
     excel_path = os.path.join(
@@ -53,24 +52,13 @@ def get_agent_data(matricule):
                                 return pd.to_datetime(val).strftime("%Y-%m-%d")
                             return ""
 
-                        # Extraction du nom / prénom selon le nom de la colonne dans la feuille
-                        nom_prenom_raw = ""
-                        for col_name in [
-                            "Nom /Prénom",
-                            "Nom et Prénom",
-                            "Nom / Prénom",
-                            "Nom Prénom",
-                            "Nom",
-                        ]:
-                            if col_name in data and pd.notnull(data[col_name]):
-                                nom_prenom_raw = str(data[col_name]).strip()
-                                break
-
+                        # Lecture de Nom /Prénom
+                        nom_prenom_raw = str(data.get("Nom /Prénom", "")).strip()
                         parts = nom_prenom_raw.split(" ", 1)
                         nom_val = parts[0] if len(parts) > 0 else ""
                         prenom_val = parts[1] if len(parts) > 1 else ""
 
-                        # Extraction Fonction
+                        # Lecture de Fonction
                         fonction_val = str(data.get("Fonction", "")).strip()
                         if fonction_val == "nan":
                             fonction_val = ""
@@ -133,11 +121,11 @@ options_modeles = [
     "CRMV (Conducteur de Manœuvre)",
 ]
 
-# Choix du modèle
+# Modèle sélectionné
 selected_modele = st.selectbox("Choisissez le modèle de carte :", options_modeles)
 modele_default_fonction = selected_modele.split("(")[-1].replace(")", "").strip()
 
-# Tracking du Matricule
+# Session State pour le matricule
 if "last_matricule" not in st.session_state:
     st.session_state["last_matricule"] = ""
 
@@ -145,10 +133,10 @@ matricule_search = st.text_input(
     "🔍 Rechercher par Matricule :", placeholder="Ex: 42685P"
 )
 
-# Chargement de l'agent
+# Chargement immédiat de l'agent
 agent_found = get_agent_data(matricule_search) if matricule_search else None
 
-# Mise à jour automatique des champs quand le matricule change
+# Mise à jour si le matricule change
 if matricule_search != st.session_state["last_matricule"]:
     st.session_state["last_matricule"] = matricule_search
     if agent_found:
@@ -230,7 +218,6 @@ def generate_custom_excel():
     wb = openpyxl.load_workbook(tmpl_path)
     sheet = wb.active
 
-    # Écriture dans les cellules
     sheet["D4"] = fonction_input
     sheet["F5"] = nom_input
     sheet["J5"] = prenom_input
@@ -243,7 +230,6 @@ def generate_custom_excel():
     sheet["L4"] = materiel_locos
     sheet["Q4"] = lignes_sites
 
-    # Insertion photo
     if uploaded_photo is not None:
         img_bytes = uploaded_photo.read()
         pil_img = PILImage.open(io.BytesIO(img_bytes))
