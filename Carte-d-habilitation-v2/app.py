@@ -1,7 +1,9 @@
 import io
 import os
 import openpyxl
+from openpyxl.drawing.image import Image as OpenpyxlImage
 import pandas as pd
+from PIL import Image as PILImage
 import streamlit as st
 
 st.set_page_config(
@@ -65,7 +67,6 @@ def get_agent_data(matricule):
     return None
 
 
-# Function selection mapping
 options_modeles = [
     "CTR (Chef de Train)",
     "CL (Conducteur de Ligne)",
@@ -73,19 +74,33 @@ options_modeles = [
     "CRMV (Conducteur de Manœuvre)",
 ]
 
-# Section Recherche
+# Section Modèle
+selected_modele = st.selectbox("Choisissez le modèle de carte :", options_modeles)
+
+# Extract default function name from model choice
+modele_default_fonction = selected_modele.split("(")[-1].replace(")", "").strip()
+
+# Section Recherche Matricule
 matricule_search = st.text_input(
     "🔍 Rechercher par Matricule :", placeholder="Ex: 42685P"
 )
 
-# Chargement automatique des données initiales
 agent_found = get_agent_data(matricule_search) if matricule_search else None
 
+# Default values
 default_nom = agent_found["Nom"] if agent_found else ""
 default_prenom = agent_found["Prenom"] if agent_found else ""
 default_mat = (
     agent_found["Matricule"] if agent_found else matricule_search or ""
 )
+
+# Fonction par défaut (De l'agent si trouvé, sinon du modèle sélectionné)
+default_fonction = (
+    agent_found["Fonction"]
+    if (agent_found and agent_found["Fonction"])
+    else modele_default_fonction
+)
+
 default_dt_auth = agent_found["Date_Autorisation"] if agent_found else ""
 default_dt_med = agent_found["Examen_Medical"] if agent_found else ""
 default_dt_psy = agent_found["Examen_Psychotechnique"] if agent_found else ""
@@ -101,13 +116,12 @@ default_engins = (
     else "E1450 , E1400 ,E1250 ,DH400,Z2M"
 )
 
-# Choix du modèle
-selected_modele = st.selectbox("Choisissez le modèle de carte :", options_modeles)
-
-# Photo upload
+# Photo upload + Preview
 uploaded_photo = st.file_uploader(
     "Photo d'identité (JPG / PNG)", type=["jpg", "jpeg", "png"]
 )
+if uploaded_photo is not None:
+    st.image(uploaded_photo, caption="Aperçu de la photo", width=120)
 
 st.markdown("---")
 
@@ -119,6 +133,9 @@ col1, col2 = st.columns(2)
 with col1:
     nom_input = st.text_input("Nom", value=default_nom)
     matricule_input = st.text_input("Matricule", value=default_mat)
+    fonction_input = st.text_input(
+        "Fonction (Titre d'habilitation)", value=default_fonction
+    )
     dt_autorisation = st.text_input(
         "Date d'autorisation", value=default_dt_auth
     )
@@ -132,16 +149,14 @@ with col2:
     dt_psycho = st.text_input(
         "Date examen psychotechnique", value=default_dt_psy
     )
-    lignes_sites = st.text_input(
-        "Lignes / Sites autorisés", value=default_lignes
-    )
 
+lignes_sites = st.text_input("Lignes / Sites autorisés", value=default_lignes)
 materiel_locos = st.text_input(
     "Matériel / Locos / Rames", value=default_engins
 )
 
 
-# Génération et Téléchargement
+# Génération du fichier Excel
 def generate_custom_excel():
     template_map = {
         "CTR (Chef de Train)": "CTR.xlsx",
@@ -156,7 +171,10 @@ def generate_custom_excel():
     wb = openpyxl.load_workbook(tmpl_path)
     sheet = wb.active
 
-    # Injection des données saisies/modifiées
+    # Ecriture Fonction f cell D4
+    sheet["D4"] = fonction_input
+
+    # Remplissage des textes
     sheet["F5"] = nom_input
     sheet["J5"] = prenom_input
     sheet["F6"] = matricule_input
@@ -164,6 +182,22 @@ def generate_custom_excel():
     sheet["F9"] = dt_professionnel
     sheet["F10"] = dt_medical
     sheet["F11"] = dt_psycho
+
+    # Injection Matériel et Lignes
+    sheet["L4"] = materiel_locos
+    sheet["Q4"] = lignes_sites
+
+    # Insertion de la photo
+    if uploaded_photo is not None:
+        img_bytes = uploaded_photo.read()
+        pil_img = PILImage.open(io.BytesIO(img_bytes))
+        pil_img = pil_img.resize((100, 120))
+
+        img_temp_path = os.path.join(base_dir, "_temp_photo.png")
+        pil_img.save(img_temp_path)
+
+        xl_img = OpenpyxlImage(img_temp_path)
+        sheet.add_image(xl_img, "B5")
 
     output = io.BytesIO()
     wb.save(output)
