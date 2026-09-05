@@ -1,100 +1,117 @@
+import os
 import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="تتبع تواريخ الحصص والفحوصات", layout="centered"
+    page_title="Carte d'Habilitation - EPTC Kénitra",
+    page_icon="🪪",
+    layout="centered",
 )
 
-st.title("📋 تتبع بيانات العون بالسجل")
+st.title("🪪 Système Génération Carte d'Habilitation")
 
 
-# دالة قراءة وتجهيز البيانات من Excel
+# Function to retrieve agent data from Excel registry
 @st.cache_data
 def get_agent_data(matricule):
-    excel_path = "Registre des habilitations EPTC KENITRA 2026.xlsx"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    excel_path = os.path.join(
+        base_dir, "Registre des habilitations EPTC KENITRA 2026.xlsx"
+    )
 
-    # قراءة صفحة Conduite مع ضبط الترويسة (header=6)
-    df = pd.read_excel(excel_path, sheet_name="Conduite", header=6)
+    if not os.path.exists(excel_path):
+        st.error(f"Fichier introuvable: {excel_path}")
+        return None
 
-    # تنظيف رقم التسجيل من الفراغات
-    df["Matricule"] = df["Matricule"].astype(str).str.strip()
+    try:
+        df = pd.read_excel(excel_path, sheet_name="Conduite", header=6)
+        df["Matricule"] = df["Matricule"].astype(str).str.strip()
+        agent = df[df["Matricule"] == str(matricule).strip()]
 
-    # البحث عن الشخص بـ Matricule
-    agent = df[df["Matricule"] == str(matricule).strip()]
+        if not agent.empty:
+            data = agent.iloc[0]
 
-    if not agent.empty:
-        data = agent.iloc[0]
+            def fmt_date(val):
+                if (
+                    pd.notnull(val)
+                    and str(val) != "NaT"
+                    and str(val).strip() != ""
+                ):
+                    return pd.to_datetime(val).strftime("%Y-%m-%d")
+                return ""
 
-        # دالة تنسيق التواريخ (ترجع نص فارغ "" إذا كان التاريخ غير موجود)
-        def fmt_date(val):
-            if pd.notnull(val) and str(val) != "NaT" and str(val).strip() != "":
-                return pd.to_datetime(val).strftime("%Y-%m-%d")
-            return ""
+            nom_prenom = str(data.get("Nom /Prénom", "")).strip()
 
-        return {
-            "Nom_Prenom": data.get("Nom /Prénom", ""),
-            "Fonction": data.get("Fonction", ""),
-            "Date_Autorisation": fmt_date(data.get("Date d'autorisation")),
-            "Derniere_VM": fmt_date(data.get("Dernière  VM")),
-            "Prochaine_VM": fmt_date(data.get("Date prochaine VM  ")),
-            "Dernier_Psy": fmt_date(data.get("Dernier Psy")),
-            "Prochain_Psy": fmt_date(data.get("Date prochain  Psy")),
-            "Derniere_Eval": fmt_date(data.get("Dernière évaluation")),
-            "Prochaine_Eval": fmt_date(data.get("Date prochaine évaluation")),
-        }
+            return {
+                "Matricule": str(data.get("Matricule", "")),
+                "Nom_Prenom": nom_prenom,
+                "Fonction": str(data.get("Fonction", "")).strip(),
+                "Date_Autorisation": fmt_date(data.get("Date d'autorisation")),
+                "Examen_Medical": fmt_date(data.get("Dernière  VM")),
+                "Examen_Psychotechnique": fmt_date(data.get("Dernier Psy")),
+                "Examen_Professionnel": fmt_date(data.get("Dernière évaluation")),
+            }
+    except Exception as e:
+        st.error(f"Erreur de lecture du fichier: {e}")
     return None
 
 
-# إدخال رقم الـ Matricule
+# Determine template file based on agent function
+def get_template_file(fonction):
+    fonction_upper = fonction.upper()
+    if "CONDUCTEUR DE LIGNE" in fonction_upper or "CL" in fonction_upper:
+        return "CL.xlsx"
+    elif "CHEF DE TRAIN" in fonction_upper or "CTR" in fonction_upper:
+        return "CTR.xlsx"
+    elif "CHEF FORMATION" in fonction_upper or "CFT" in fonction_upper:
+        return "CFT.xlsx"
+    elif "MANŒUVRE" in fonction_upper or "CRMV" in fonction_upper:
+        return "CRMV.xlsx"
+    return "CL.xlsx"
+
+
+# UI Input
 matricule_input = st.text_input(
-    "أدخل رقم التسجيل (Matricule):", placeholder="مثال: 42685P"
+    "🔍 Entrez le Matricule :", placeholder="Exemple: 42685P"
 )
 
 if matricule_input:
-    agent_info = get_agent_data(matricule_input)
+    agent = get_agent_data(matricule_input)
 
-    if agent_info:
-        # عرض معلومات الشخص الأساسية
-        st.success(f"👤 **Nom & Prénom:** {agent_info['Nom_Prenom']}")
-        if agent_info["Fonction"]:
-            st.info(f"💼 **Fonction:** {agent_info['Fonction']}")
+    if agent:
+        template_file = get_template_file(agent["Fonction"])
 
-        st.subheader("📅 التواريخ:")
+        st.success(f"👤 **Nom & Prénom:** {agent['Nom_Prenom']}")
+        st.info(
+            f"💼 **Fonction:** {agent['Fonction']} | **Modèle:** `{template_file}`"
+        )
 
-        # عرض Date d'autorisation فقط إذا كان يحتوي على قيمة
-        if agent_info["Date_Autorisation"]:
-            st.write(
-                f"• **Date d'autorisation:** `{agent_info['Date_Autorisation']}`"
+        if agent["Date_Autorisation"]:
+            st.markdown(
+                f"📅 **Date d'autorisation:** `{agent['Date_Autorisation']}`"
             )
 
         st.divider()
 
-        # عرض بقية التواريخ فـ أعمدة مرتبة
         col1, col2, col3 = st.columns(3)
 
         with col1:
             st.metric(
-                label="🩺 Dernière VM",
-                value=agent_info["Derniere_VM"] or "—",
+                label="🩺 Examen Médical",
+                value=agent["Examen_Medical"] or "—",
             )
-            if agent_info["Prochaine_VM"]:
-                st.caption(f"Prochaine VM: {agent_info['Prochaine_VM']}")
 
         with col2:
             st.metric(
-                label="🧠 Dernier Psy",
-                value=agent_info["Dernier_Psy"] or "—",
+                label="🧠 Examen Psychotechnique",
+                value=agent["Examen_Psychotechnique"] or "—",
             )
-            if agent_info["Prochain_Psy"]:
-                st.caption(f"Prochain Psy: {agent_info['Prochain_Psy']}")
 
         with col3:
             st.metric(
-                label="📝 Dernière Évaluation",
-                value=agent_info["Derniere_Eval"] or "—",
+                label="📝 Examen Professionnel",
+                value=agent["Examen_Professionnel"] or "—",
             )
-            if agent_info["Prochaine_Eval"]:
-                st.caption(f"Prochaine Eval: {agent_info['Prochaine_Eval']}")
 
     else:
-        st.error("❌ رقم التسجيل (Matricule) غير موجود فـ الـ Registre.")
+        st.error("❌ Matricule introuvable dans le registre.")
