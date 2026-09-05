@@ -74,49 +74,57 @@ options_modeles = [
     "CRMV (Conducteur de Manœuvre)",
 ]
 
-# Section Modèle
+# Modèle sélectionné
 selected_modele = st.selectbox("Choisissez le modèle de carte :", options_modeles)
-
-# Extract default function name from model choice
 modele_default_fonction = selected_modele.split("(")[-1].replace(")", "").strip()
 
-# Section Recherche Matricule
+# Callback pour mettre à jour la fonction et les champs quand le matricule change
+if "last_matricule" not in st.session_state:
+    st.session_state["last_matricule"] = ""
+
 matricule_search = st.text_input(
     "🔍 Rechercher par Matricule :", placeholder="Ex: 42685P"
 )
 
+# Chargement de l'agent
 agent_found = get_agent_data(matricule_search) if matricule_search else None
 
-# Default values
-default_nom = agent_found["Nom"] if agent_found else ""
-default_prenom = agent_found["Prenom"] if agent_found else ""
-default_mat = (
-    agent_found["Matricule"] if agent_found else matricule_search or ""
-)
+# Si le matricule a changé ou un agent est trouvé, on réinitialise les champs
+if matricule_search != st.session_state["last_matricule"]:
+    st.session_state["last_matricule"] = matricule_search
+    if agent_found:
+        st.session_state["nom"] = agent_found["Nom"]
+        st.session_state["prenom"] = agent_found["Prenom"]
+        st.session_state["matricule"] = agent_found["Matricule"]
+        st.session_state["fonction"] = (
+            agent_found["Fonction"] if agent_found["Fonction"] else modele_default_fonction
+        )
+        st.session_state["dt_auth"] = agent_found["Date_Autorisation"]
+        st.session_state["dt_med"] = agent_found["Examen_Medical"]
+        st.session_state["dt_psy"] = agent_found["Examen_Psychotechnique"]
+        st.session_state["dt_prof"] = agent_found["Examen_Professionnel"]
+        st.session_state["lignes"] = (
+            agent_found["Ligne_Site"] if agent_found["Ligne_Site"] else "Kenitra - Casa"
+        )
+        st.session_state["engins"] = (
+            agent_found["Engin"] if agent_found["Engin"] else "E1450, E1400, Z2M"
+        )
+    else:
+        st.session_state["fonction"] = modele_default_fonction
 
-# Fonction par défaut (De l'agent si trouvé, sinon du modèle sélectionné)
-default_fonction = (
-    agent_found["Fonction"]
-    if (agent_found and agent_found["Fonction"])
-    else modele_default_fonction
-)
+# Set initial defaults if not existing
+st.session_state.setdefault("nom", "")
+st.session_state.setdefault("prenom", "")
+st.session_state.setdefault("matricule", matricule_search or "")
+st.session_state.setdefault("fonction", modele_default_fonction)
+st.session_state.setdefault("dt_auth", "")
+st.session_state.setdefault("dt_med", "")
+st.session_state.setdefault("dt_psy", "")
+st.session_state.setdefault("dt_prof", "")
+st.session_state.setdefault("lignes", "Kenitra - Casa")
+st.session_state.setdefault("engins", "E1450, E1400, Z2M")
 
-default_dt_auth = agent_found["Date_Autorisation"] if agent_found else ""
-default_dt_med = agent_found["Examen_Medical"] if agent_found else ""
-default_dt_psy = agent_found["Examen_Psychotechnique"] if agent_found else ""
-default_dt_prof = agent_found["Examen_Professionnel"] if agent_found else ""
-default_lignes = (
-    agent_found["Ligne_Site"]
-    if agent_found
-    else "Kenitra - Casa / Lignes autorisées"
-)
-default_engins = (
-    agent_found["Engin"]
-    if agent_found
-    else "E1450 , E1400 ,E1250 ,DH400,Z2M"
-)
-
-# Photo upload + Preview
+# Upload Photo
 uploaded_photo = st.file_uploader(
     "Photo d'identité (JPG / PNG)", type=["jpg", "jpeg", "png"]
 )
@@ -125,38 +133,28 @@ if uploaded_photo is not None:
 
 st.markdown("---")
 
-# Formulaire éditable des informations
+# Formulaire
 st.subheader("Informations de l'Agent")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    nom_input = st.text_input("Nom", value=default_nom)
-    matricule_input = st.text_input("Matricule", value=default_mat)
-    fonction_input = st.text_input(
-        "Fonction (Titre d'habilitation)", value=default_fonction
-    )
-    dt_autorisation = st.text_input(
-        "Date d'autorisation", value=default_dt_auth
-    )
-    dt_medical = st.text_input("Date examen médical", value=default_dt_med)
+    nom_input = st.text_input("Nom", key="nom")
+    matricule_input = st.text_input("Matricule", key="matricule")
+    fonction_input = st.text_input("Fonction (Titre d'habilitation)", key="fonction")
+    dt_autorisation = st.text_input("Date d'autorisation", key="dt_auth")
+    dt_medical = st.text_input("Date examen médical", key="dt_med")
 
 with col2:
-    prenom_input = st.text_input("Prénom", value=default_prenom)
-    dt_professionnel = st.text_input(
-        "Date examen professionnel", value=default_dt_prof
-    )
-    dt_psycho = st.text_input(
-        "Date examen psychotechnique", value=default_dt_psy
-    )
+    prenom_input = st.text_input("Prénom", key="prenom")
+    dt_professionnel = st.text_input("Date examen professionnel", key="dt_prof")
+    dt_psycho = st.text_input("Date examen psychotechnique", key="dt_psy")
 
-lignes_sites = st.text_input("Lignes / Sites autorisés", value=default_lignes)
-materiel_locos = st.text_input(
-    "Matériel / Locos / Rames", value=default_engins
-)
+lignes_sites = st.text_input("Lignes / Sites autorisés", key="lignes")
+materiel_locos = st.text_input("Matériel / Locos / Rames", key="engins")
 
 
-# Génération du fichier Excel
+# Génération Excel
 def generate_custom_excel():
     template_map = {
         "CTR (Chef de Train)": "CTR.xlsx",
@@ -171,10 +169,7 @@ def generate_custom_excel():
     wb = openpyxl.load_workbook(tmpl_path)
     sheet = wb.active
 
-    # Ecriture Fonction f cell D4
     sheet["D4"] = fonction_input
-
-    # Remplissage des textes
     sheet["F5"] = nom_input
     sheet["J5"] = prenom_input
     sheet["F6"] = matricule_input
@@ -183,11 +178,9 @@ def generate_custom_excel():
     sheet["F10"] = dt_medical
     sheet["F11"] = dt_psycho
 
-    # Injection Matériel et Lignes
     sheet["L4"] = materiel_locos
     sheet["Q4"] = lignes_sites
 
-    # Insertion de la photo
     if uploaded_photo is not None:
         img_bytes = uploaded_photo.read()
         pil_img = PILImage.open(io.BytesIO(img_bytes))
