@@ -15,7 +15,7 @@ st.set_page_config(
 st.title("🎴 Générateur de Cartes d'Habilitation")
 
 
-# 1. Recherche des données dans le Registre Excel
+# 1. Recherche des données dans TOUTES les feuilles du Registre
 @st.cache_data
 def get_agent_data(matricule):
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -27,41 +27,54 @@ def get_agent_data(matricule):
         return None
 
     try:
-        df = pd.read_excel(excel_path, sheet_name="Conduite", header=6)
-        df["Matricule"] = df["Matricule"].astype(str).str.strip()
-        agent = df[df["Matricule"] == str(matricule).strip()]
+        xl = pd.ExcelFile(excel_path)
+        sheets_to_check = ["Conduite", "Formation", "CGPx Conduite"]
 
-        if not agent.empty:
-            data = agent.iloc[0]
+        for sheet_name in sheets_to_check:
+            if sheet_name in xl.sheet_names:
+                df = pd.read_excel(excel_path, sheet_name=sheet_name, header=6)
 
-            def fmt_date(val):
-                if (
-                    pd.notnull(val)
-                    and str(val) != "NaT"
-                    and str(val).strip() != ""
-                ):
-                    return pd.to_datetime(val).strftime("%Y-%m-%d")
-                return ""
+                if "Matricule" in df.columns:
+                    df["Matricule"] = df["Matricule"].astype(str).str.strip()
+                    agent = df[df["Matricule"] == str(matricule).strip()]
 
-            nom_prenom = str(data.get("Nom /Prénom", "")).strip()
-            parts = nom_prenom.split(" ", 1)
+                    if not agent.empty:
+                        data = agent.iloc[0]
 
-            return {
-                "Matricule": str(data.get("Matricule", "")),
-                "Nom": parts[0] if len(parts) > 0 else "",
-                "Prenom": parts[1] if len(parts) > 1 else "",
-                "Fonction": str(data.get("Fonction", "")).strip(),
-                "Date_Autorisation": fmt_date(data.get("Date d'autorisation")),
-                "Examen_Medical": fmt_date(data.get("Dernière  VM")),
-                "Examen_Psychotechnique": fmt_date(data.get("Dernier Psy")),
-                "Examen_Professionnel": fmt_date(data.get("Dernière évaluation")),
-                "Engin": str(data.get("Engin ", ""))
-                if pd.notnull(data.get("Engin "))
-                else "",
-                "Ligne_Site": str(data.get("Ligne / Site ", ""))
-                if pd.notnull(data.get("Ligne / Site "))
-                else "",
-            }
+                        def fmt_date(val):
+                            if (
+                                pd.notnull(val)
+                                and str(val) != "NaT"
+                                and str(val).strip() != ""
+                            ):
+                                return pd.to_datetime(val).strftime("%Y-%m-%d")
+                            return ""
+
+                        nom_prenom = str(data.get("Nom /Prénom", "")).strip()
+                        parts = nom_prenom.split(" ", 1)
+
+                        return {
+                            "Matricule": str(data.get("Matricule", "")),
+                            "Nom": parts[0] if len(parts) > 0 else "",
+                            "Prenom": parts[1] if len(parts) > 1 else "",
+                            "Fonction": str(data.get("Fonction", "")).strip(),
+                            "Date_Autorisation": fmt_date(
+                                data.get("Date d'autorisation")
+                            ),
+                            "Examen_Medical": fmt_date(data.get("Dernière  VM")),
+                            "Examen_Psychotechnique": fmt_date(
+                                data.get("Dernier Psy")
+                            ),
+                            "Examen_Professionnel": fmt_date(
+                                data.get("Dernière évaluation")
+                            ),
+                            "Engin": str(data.get("Engin ", ""))
+                            if pd.notnull(data.get("Engin "))
+                            else "",
+                            "Ligne_Site": str(data.get("Ligne / Site ", ""))
+                            if pd.notnull(data.get("Ligne / Site "))
+                            else "",
+                        }
     except Exception:
         pass
     return None
@@ -78,7 +91,7 @@ options_modeles = [
 selected_modele = st.selectbox("Choisissez le modèle de carte :", options_modeles)
 modele_default_fonction = selected_modele.split("(")[-1].replace(")", "").strip()
 
-# Callback pour mettre à jour la fonction et les champs quand le matricule change
+# Tracking du Matricule
 if "last_matricule" not in st.session_state:
     st.session_state["last_matricule"] = ""
 
@@ -89,7 +102,7 @@ matricule_search = st.text_input(
 # Chargement de l'agent
 agent_found = get_agent_data(matricule_search) if matricule_search else None
 
-# Si le matricule a changé ou un agent est trouvé, on réinitialise les champs
+# Mise à jour des valeurs si le matricule change
 if matricule_search != st.session_state["last_matricule"]:
     st.session_state["last_matricule"] = matricule_search
     if agent_found:
@@ -97,7 +110,9 @@ if matricule_search != st.session_state["last_matricule"]:
         st.session_state["prenom"] = agent_found["Prenom"]
         st.session_state["matricule"] = agent_found["Matricule"]
         st.session_state["fonction"] = (
-            agent_found["Fonction"] if agent_found["Fonction"] else modele_default_fonction
+            agent_found["Fonction"]
+            if agent_found["Fonction"]
+            else modele_default_fonction
         )
         st.session_state["dt_auth"] = agent_found["Date_Autorisation"]
         st.session_state["dt_med"] = agent_found["Examen_Medical"]
@@ -112,7 +127,7 @@ if matricule_search != st.session_state["last_matricule"]:
     else:
         st.session_state["fonction"] = modele_default_fonction
 
-# Set initial defaults if not existing
+# Valeurs par défaut
 st.session_state.setdefault("nom", "")
 st.session_state.setdefault("prenom", "")
 st.session_state.setdefault("matricule", matricule_search or "")
@@ -124,7 +139,7 @@ st.session_state.setdefault("dt_prof", "")
 st.session_state.setdefault("lignes", "Kenitra - Casa")
 st.session_state.setdefault("engins", "E1450, E1400, Z2M")
 
-# Upload Photo
+# Photo upload
 uploaded_photo = st.file_uploader(
     "Photo d'identité (JPG / PNG)", type=["jpg", "jpeg", "png"]
 )
@@ -133,7 +148,7 @@ if uploaded_photo is not None:
 
 st.markdown("---")
 
-# Formulaire
+# Formulaire éditable
 st.subheader("Informations de l'Agent")
 
 col1, col2 = st.columns(2)
