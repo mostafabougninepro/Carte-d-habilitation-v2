@@ -15,7 +15,7 @@ st.set_page_config(
 st.title("🎴 Générateur de Cartes d'Habilitation")
 
 
-# 1. Recherche des données dans TOUTES les feuilles du Registre
+# 1. Recherche intelligente dans TOUTES les feuilles du Registre
 @st.cache_data
 def get_agent_data(matricule):
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -34,6 +34,9 @@ def get_agent_data(matricule):
             if sheet_name in xl.sheet_names:
                 df = pd.read_excel(excel_path, sheet_name=sheet_name, header=6)
 
+                # Nettoyage des noms de colonnes
+                df.columns = df.columns.astype(str).str.strip()
+
                 if "Matricule" in df.columns:
                     df["Matricule"] = df["Matricule"].astype(str).str.strip()
                     agent = df[df["Matricule"] == str(matricule).strip()]
@@ -50,29 +53,72 @@ def get_agent_data(matricule):
                                 return pd.to_datetime(val).strftime("%Y-%m-%d")
                             return ""
 
-                        nom_prenom = str(data.get("Nom /Prénom", "")).strip()
-                        parts = nom_prenom.split(" ", 1)
+                        # Extraction du nom / prénom selon le nom de la colonne dans la feuille
+                        nom_prenom_raw = ""
+                        for col_name in [
+                            "Nom /Prénom",
+                            "Nom et Prénom",
+                            "Nom / Prénom",
+                            "Nom Prénom",
+                            "Nom",
+                        ]:
+                            if col_name in data and pd.notnull(data[col_name]):
+                                nom_prenom_raw = str(data[col_name]).strip()
+                                break
+
+                        parts = nom_prenom_raw.split(" ", 1)
+                        nom_val = parts[0] if len(parts) > 0 else ""
+                        prenom_val = parts[1] if len(parts) > 1 else ""
+
+                        # Extraction Fonction
+                        fonction_val = str(data.get("Fonction", "")).strip()
+                        if fonction_val == "nan":
+                            fonction_val = ""
 
                         return {
                             "Matricule": str(data.get("Matricule", "")),
-                            "Nom": parts[0] if len(parts) > 0 else "",
-                            "Prenom": parts[1] if len(parts) > 1 else "",
-                            "Fonction": str(data.get("Fonction", "")).strip(),
+                            "Nom": nom_val,
+                            "Prenom": prenom_val,
+                            "Fonction": fonction_val,
                             "Date_Autorisation": fmt_date(
                                 data.get("Date d'autorisation")
                             ),
-                            "Examen_Medical": fmt_date(data.get("Dernière  VM")),
+                            "Examen_Medical": fmt_date(
+                                data.get(
+                                    "Dernière  VM",
+                                    data.get("Dernière VM", ""),
+                                )
+                            ),
                             "Examen_Psychotechnique": fmt_date(
-                                data.get("Dernier Psy")
+                                data.get(
+                                    "Dernier Psy", data.get("Dernière Psy", "")
+                                )
                             ),
                             "Examen_Professionnel": fmt_date(
-                                data.get("Dernière évaluation")
+                                data.get(
+                                    "Dernière évaluation",
+                                    data.get("Dernier Eval", ""),
+                                )
                             ),
-                            "Engin": str(data.get("Engin ", ""))
-                            if pd.notnull(data.get("Engin "))
+                            "Engin": str(
+                                data.get("Engin ", data.get("Engin", ""))
+                            )
+                            if pd.notnull(
+                                data.get("Engin ", data.get("Engin", None))
+                            )
                             else "",
-                            "Ligne_Site": str(data.get("Ligne / Site ", ""))
-                            if pd.notnull(data.get("Ligne / Site "))
+                            "Ligne_Site": str(
+                                data.get(
+                                    "Ligne / Site ",
+                                    data.get("Ligne / Site", ""),
+                                )
+                            )
+                            if pd.notnull(
+                                data.get(
+                                    "Ligne / Site ",
+                                    data.get("Ligne / Site", None),
+                                )
+                            )
                             else "",
                         }
     except Exception:
@@ -87,7 +133,7 @@ options_modeles = [
     "CRMV (Conducteur de Manœuvre)",
 ]
 
-# Modèle sélectionné
+# Choix du modèle
 selected_modele = st.selectbox("Choisissez le modèle de carte :", options_modeles)
 modele_default_fonction = selected_modele.split("(")[-1].replace(")", "").strip()
 
@@ -102,7 +148,7 @@ matricule_search = st.text_input(
 # Chargement de l'agent
 agent_found = get_agent_data(matricule_search) if matricule_search else None
 
-# Mise à jour des valeurs si le matricule change
+# Mise à jour automatique des champs quand le matricule change
 if matricule_search != st.session_state["last_matricule"]:
     st.session_state["last_matricule"] = matricule_search
     if agent_found:
@@ -119,7 +165,7 @@ if matricule_search != st.session_state["last_matricule"]:
         st.session_state["dt_psy"] = agent_found["Examen_Psychotechnique"]
         st.session_state["dt_prof"] = agent_found["Examen_Professionnel"]
         st.session_state["lignes"] = (
-            agent_found["Ligne_Site"] if agent_found["Ligne_Site"] else "Kenitra - Casa"
+            agent_found["Ligne_Site"] if agent_found["Ligne_Site"] else "Site Voyageurs Kénitra"
         )
         st.session_state["engins"] = (
             agent_found["Engin"] if agent_found["Engin"] else "E1450, E1400, Z2M"
@@ -127,7 +173,7 @@ if matricule_search != st.session_state["last_matricule"]:
     else:
         st.session_state["fonction"] = modele_default_fonction
 
-# Valeurs par défaut
+# Default session values
 st.session_state.setdefault("nom", "")
 st.session_state.setdefault("prenom", "")
 st.session_state.setdefault("matricule", matricule_search or "")
@@ -136,7 +182,7 @@ st.session_state.setdefault("dt_auth", "")
 st.session_state.setdefault("dt_med", "")
 st.session_state.setdefault("dt_psy", "")
 st.session_state.setdefault("dt_prof", "")
-st.session_state.setdefault("lignes", "Kenitra - Casa")
+st.session_state.setdefault("lignes", "Site Voyageurs Kénitra")
 st.session_state.setdefault("engins", "E1450, E1400, Z2M")
 
 # Photo upload
@@ -184,6 +230,7 @@ def generate_custom_excel():
     wb = openpyxl.load_workbook(tmpl_path)
     sheet = wb.active
 
+    # Écriture dans les cellules
     sheet["D4"] = fonction_input
     sheet["F5"] = nom_input
     sheet["J5"] = prenom_input
@@ -196,6 +243,7 @@ def generate_custom_excel():
     sheet["L4"] = materiel_locos
     sheet["Q4"] = lignes_sites
 
+    # Insertion photo
     if uploaded_photo is not None:
         img_bytes = uploaded_photo.read()
         pil_img = PILImage.open(io.BytesIO(img_bytes))
