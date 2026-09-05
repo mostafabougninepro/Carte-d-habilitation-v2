@@ -5,15 +5,15 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="Carte d'Habilitation - EPTC Kénitra",
+    page_title="Générateur de Cartes d'Habilitation",
     page_icon="🪪",
     layout="centered",
 )
 
-st.title("🪪 Système Génération Carte d'Habilitation")
+st.title("🎴 Générateur de Cartes d'Habilitation")
 
 
-# 1. Extraction des données depuis le Registre
+# 1. Recherche des données dans le Registre Excel
 @st.cache_data
 def get_agent_data(matricule):
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -22,7 +22,6 @@ def get_agent_data(matricule):
     )
 
     if not os.path.exists(excel_path):
-        st.error(f"Fichier introuvable: {excel_path}")
         return None
 
     try:
@@ -49,100 +48,136 @@ def get_agent_data(matricule):
                 "Matricule": str(data.get("Matricule", "")),
                 "Nom": parts[0] if len(parts) > 0 else "",
                 "Prenom": parts[1] if len(parts) > 1 else "",
-                "Nom_Prenom": nom_prenom,
                 "Fonction": str(data.get("Fonction", "")).strip(),
                 "Date_Autorisation": fmt_date(data.get("Date d'autorisation")),
                 "Examen_Medical": fmt_date(data.get("Dernière  VM")),
                 "Examen_Psychotechnique": fmt_date(data.get("Dernier Psy")),
                 "Examen_Professionnel": fmt_date(data.get("Dernière évaluation")),
+                "Engin": str(data.get("Engin ", ""))
+                if pd.notnull(data.get("Engin "))
+                else "",
+                "Ligne_Site": str(data.get("Ligne / Site ", ""))
+                if pd.notnull(data.get("Ligne / Site "))
+                else "",
             }
-    except Exception as e:
-        st.error(f"Erreur de lecture du fichier: {e}")
+    except Exception:
+        pass
     return None
 
 
-# 2. Détermination du modèle
-def get_template_file(fonction):
-    fonction_upper = fonction.upper()
-    if "CONDUCTEUR DE LIGNE" in fonction_upper or "CL" in fonction_upper:
-        return "CL.xlsx"
-    elif "CHEF DE TRAIN" in fonction_upper or "CTR" in fonction_upper:
-        return "CTR.xlsx"
-    elif "CHEF FORMATION" in fonction_upper or "CFT" in fonction_upper:
-        return "CFT.xlsx"
-    elif "MANŒUVRE" in fonction_upper or "CRMV" in fonction_upper:
-        return "CRMV.xlsx"
-    return "CL.xlsx"
+# Function selection mapping
+options_modeles = [
+    "CTR (Chef de Train)",
+    "CL (Conducteur de Ligne)",
+    "CFT (Chef Formation Trains)",
+    "CRMV (Conducteur de Manœuvre)",
+]
+
+# Section Recherche
+matricule_search = st.text_input(
+    "🔍 Rechercher par Matricule :", placeholder="Ex: 42685P"
+)
+
+# Chargement automatique des données initiales
+agent_found = get_agent_data(matricule_search) if matricule_search else None
+
+default_nom = agent_found["Nom"] if agent_found else ""
+default_prenom = agent_found["Prenom"] if agent_found else ""
+default_mat = (
+    agent_found["Matricule"] if agent_found else matricule_search or ""
+)
+default_dt_auth = agent_found["Date_Autorisation"] if agent_found else ""
+default_dt_med = agent_found["Examen_Medical"] if agent_found else ""
+default_dt_psy = agent_found["Examen_Psychotechnique"] if agent_found else ""
+default_dt_prof = agent_found["Examen_Professionnel"] if agent_found else ""
+default_lignes = (
+    agent_found["Ligne_Site"]
+    if agent_found
+    else "Kenitra - Casa / Lignes autorisées"
+)
+default_engins = (
+    agent_found["Engin"]
+    if agent_found
+    else "E1450 , E1400 ,E1250 ,DH400,Z2M"
+)
+
+# Choix du modèle
+selected_modele = st.selectbox("Choisissez le modèle de carte :", options_modeles)
+
+# Photo upload
+uploaded_photo = st.file_uploader(
+    "Photo d'identité (JPG / PNG)", type=["jpg", "jpeg", "png"]
+)
+
+st.markdown("---")
+
+# Formulaire éditable des informations
+st.subheader("Informations de l'Agent")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    nom_input = st.text_input("Nom", value=default_nom)
+    matricule_input = st.text_input("Matricule", value=default_mat)
+    dt_autorisation = st.text_input(
+        "Date d'autorisation", value=default_dt_auth
+    )
+    dt_medical = st.text_input("Date examen médical", value=default_dt_med)
+
+with col2:
+    prenom_input = st.text_input("Prénom", value=default_prenom)
+    dt_professionnel = st.text_input(
+        "Date examen professionnel", value=default_dt_prof
+    )
+    dt_psycho = st.text_input(
+        "Date examen psychotechnique", value=default_dt_psy
+    )
+    lignes_sites = st.text_input(
+        "Lignes / Sites autorisés", value=default_lignes
+    )
+
+materiel_locos = st.text_input(
+    "Matériel / Locos / Rames", value=default_engins
+)
 
 
-# 3. Remplissage du modèle Excel
-def generate_excel_card(agent, template_filename):
+# Génération et Téléchargement
+def generate_custom_excel():
+    template_map = {
+        "CTR (Chef de Train)": "CTR.xlsx",
+        "CL (Conducteur de Ligne)": "CL.xlsx",
+        "CFT (Chef Formation Trains)": "CFT.xlsx",
+        "CRMV (Conducteur de Manœuvre)": "CRMV.xlsx",
+    }
+    tmpl = template_map.get(selected_modele, "CL.xlsx")
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    template_path = os.path.join(base_dir, template_filename)
+    tmpl_path = os.path.join(base_dir, tmpl)
 
-    wb = openpyxl.load_workbook(template_path)
+    wb = openpyxl.load_workbook(tmpl_path)
     sheet = wb.active
 
-    # Insertion des données dans les cellules du modèle
-    sheet["F5"] = agent["Nom"]
-    sheet["J5"] = agent["Prenom"]
-    sheet["F6"] = agent["Matricule"]
-    sheet["F8"] = agent["Date_Autorisation"]
-    sheet["F9"] = agent["Examen_Professionnel"]
-    sheet["F10"] = agent["Examen_Medical"]
-    sheet["F11"] = agent["Examen_Psychotechnique"]
+    # Injection des données saisies/modifiées
+    sheet["F5"] = nom_input
+    sheet["J5"] = prenom_input
+    sheet["F6"] = matricule_input
+    sheet["F8"] = dt_autorisation
+    sheet["F9"] = dt_professionnel
+    sheet["F10"] = dt_medical
+    sheet["F11"] = dt_psycho
 
-    # Sauvegarde en mémoire
     output = io.BytesIO()
     wb.save(output)
     output.seek(0)
     return output
 
 
-# Interface Utilisateur
-matricule_input = st.text_input(
-    "🔍 Entrez le Matricule :", placeholder="Exemple: 42685P"
-)
-
-if matricule_input:
-    agent = get_agent_data(matricule_input)
-
-    if agent:
-        template_file = get_template_file(agent["Fonction"])
-
-        st.success(f"👤 **Nom & Prénom:** {agent['Nom_Prenom']}")
-        st.info(
-            f"💼 **Fonction:** {agent['Fonction']} | **Modèle:** `{template_file}`"
-        )
-
-        st.divider()
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("🩺 Examen Médical", agent["Examen_Medical"] or "—")
-        with col2:
-            st.metric(
-                "🧠 Examen Psychotechnique",
-                agent["Examen_Psychotechnique"] or "—",
-            )
-        with col3:
-            st.metric(
-                "📝 Examen Professionnel",
-                agent["Examen_Professionnel"] or "—",
-            )
-
-        st.divider()
-
-        # Génération du fichier Excel à télécharger
-        excel_data = generate_excel_card(agent, template_file)
-
-        # Bouton de Téléchargement
-        st.download_button(
-            label="📥 Télécharger la Carte d'Habilitation (Excel)",
-            data=excel_data,
-            file_name=f"Carte_Habilitation_{agent['Matricule']}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
-
-    else:
-        st.error("❌ Matricule introuvable dans le registre.")
+st.write("")
+if st.button("⚡ Générer la Carte"):
+    excel_file = generate_custom_excel()
+    st.success("✅ Carte générée avec succès !")
+    st.download_button(
+        label="📥 Télécharger la Carte (Excel)",
+        data=excel_file,
+        file_name=f"Carte_{matricule_input or 'Agent'}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
