@@ -1,4 +1,6 @@
+import io
 import os
+import openpyxl
 import pandas as pd
 import streamlit as st
 
@@ -11,7 +13,7 @@ st.set_page_config(
 st.title("🪪 Système Génération Carte d'Habilitation")
 
 
-# Function to retrieve agent data from Excel registry
+# 1. Extraction des données depuis le Registre
 @st.cache_data
 def get_agent_data(matricule):
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -41,9 +43,12 @@ def get_agent_data(matricule):
                 return ""
 
             nom_prenom = str(data.get("Nom /Prénom", "")).strip()
+            parts = nom_prenom.split(" ", 1)
 
             return {
                 "Matricule": str(data.get("Matricule", "")),
+                "Nom": parts[0] if len(parts) > 0 else "",
+                "Prenom": parts[1] if len(parts) > 1 else "",
                 "Nom_Prenom": nom_prenom,
                 "Fonction": str(data.get("Fonction", "")).strip(),
                 "Date_Autorisation": fmt_date(data.get("Date d'autorisation")),
@@ -56,7 +61,7 @@ def get_agent_data(matricule):
     return None
 
 
-# Determine template file based on agent function
+# 2. Détermination du modèle
 def get_template_file(fonction):
     fonction_upper = fonction.upper()
     if "CONDUCTEUR DE LIGNE" in fonction_upper or "CL" in fonction_upper:
@@ -70,7 +75,31 @@ def get_template_file(fonction):
     return "CL.xlsx"
 
 
-# UI Input
+# 3. Remplissage du modèle Excel
+def generate_excel_card(agent, template_filename):
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    template_path = os.path.join(base_dir, template_filename)
+
+    wb = openpyxl.load_workbook(template_path)
+    sheet = wb.active
+
+    # Insertion des données dans les cellules du modèle
+    sheet["F5"] = agent["Nom"]
+    sheet["J5"] = agent["Prenom"]
+    sheet["F6"] = agent["Matricule"]
+    sheet["F8"] = agent["Date_Autorisation"]
+    sheet["F9"] = agent["Examen_Professionnel"]
+    sheet["F10"] = agent["Examen_Medical"]
+    sheet["F11"] = agent["Examen_Psychotechnique"]
+
+    # Sauvegarde en mémoire
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return output
+
+
+# Interface Utilisateur
 matricule_input = st.text_input(
     "🔍 Entrez le Matricule :", placeholder="Exemple: 42685P"
 )
@@ -86,32 +115,34 @@ if matricule_input:
             f"💼 **Fonction:** {agent['Fonction']} | **Modèle:** `{template_file}`"
         )
 
-        if agent["Date_Autorisation"]:
-            st.markdown(
-                f"📅 **Date d'autorisation:** `{agent['Date_Autorisation']}`"
+        st.divider()
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("🩺 Examen Médical", agent["Examen_Medical"] or "—")
+        with col2:
+            st.metric(
+                "🧠 Examen Psychotechnique",
+                agent["Examen_Psychotechnique"] or "—",
+            )
+        with col3:
+            st.metric(
+                "📝 Examen Professionnel",
+                agent["Examen_Professionnel"] or "—",
             )
 
         st.divider()
 
-        col1, col2, col3 = st.columns(3)
+        # Génération du fichier Excel à télécharger
+        excel_data = generate_excel_card(agent, template_file)
 
-        with col1:
-            st.metric(
-                label="🩺 Examen Médical",
-                value=agent["Examen_Medical"] or "—",
-            )
-
-        with col2:
-            st.metric(
-                label="🧠 Examen Psychotechnique",
-                value=agent["Examen_Psychotechnique"] or "—",
-            )
-
-        with col3:
-            st.metric(
-                label="📝 Examen Professionnel",
-                value=agent["Examen_Professionnel"] or "—",
-            )
+        # Bouton de Téléchargement
+        st.download_button(
+            label="📥 Télécharger la Carte d'Habilitation (Excel)",
+            data=excel_data,
+            file_name=f"Carte_Habilitation_{agent['Matricule']}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
 
     else:
         st.error("❌ Matricule introuvable dans le registre.")
