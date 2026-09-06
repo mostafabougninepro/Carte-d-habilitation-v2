@@ -14,38 +14,37 @@ st.set_page_config(
 
 st.title("🎴 Générateur de Cartes d'Habilitation")
 
+# 1. تحديد المسار المطلق والجامع للمجلد الحالي لـ app.py
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# دالة البحث فـ photo A أولاً، وإلا مالقاش كيمشي لـ photo B
+
+# دالة بحث قوية ومستقلة تماماً عن هيكلة المسارات
 def get_agent_photo(matricule):
     if not matricule or not str(matricule).strip():
-        return None
+        return None, "Matricule vide"
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
     target = str(matricule).strip().lower()
 
-    folders = ["photo A", "photo B"]
+    # مسح شامل للمجلد الحالي وكافة المجلدات الفرعية (photo A, photo B, etc.)
+    for root, dirs, files in os.walk(BASE_DIR):
+        for file in files:
+            name_part, ext = os.path.splitext(file)
+            # التأكد أن الملف صورة وأن اسمه يطابق الماتريكيل
+            if ext.lower() in [
+                ".jpg",
+                ".jpeg",
+                ".png",
+            ] and name_part.strip().lower() == target:
+                full_path = os.path.join(root, file)
+                return full_path, f"Trouvé dans : {os.path.basename(root)}"
 
-    for folder_name in folders:
-        folder_path = os.path.join(base_dir, folder_name)
-
-        if os.path.exists(folder_path):
-            try:
-                for file_name in os.listdir(folder_path):
-                    name_part, _ = os.path.splitext(file_name)
-                    if name_part.strip().lower() == target:
-                        return os.path.join(folder_path, file_name)
-            except Exception:
-                continue
-
-    return None
+    return None, "Non trouvée dans les dossiers"
 
 
 # البحث فـ ملف Excel الخاص بالـ Registre
 def get_agent_data(matricule):
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-
     excel_filename = None
-    for f in os.listdir(base_dir):
+    for f in os.listdir(BASE_DIR):
         if f.lower().endswith(".xlsx") and "registre" in f.lower():
             excel_filename = f
             break
@@ -54,7 +53,7 @@ def get_agent_data(matricule):
         st.error("⚠️ Fichier Excel du registre introuvable !")
         return None
 
-    excel_path = os.path.join(base_dir, excel_filename)
+    excel_path = os.path.join(BASE_DIR, excel_filename)
 
     try:
         xl = pd.ExcelFile(excel_path)
@@ -181,7 +180,7 @@ if "last_matricule" not in st.session_state:
     st.session_state["last_matricule"] = ""
 
 matricule_search = st.text_input(
-    "🔍 Rechercher par Matricule :", placeholder="Ex: 47622S"
+    "🔍 Rechercher par Matricule :", placeholder="Ex: 47614H"
 )
 
 agent_found = get_agent_data(matricule_search) if matricule_search else None
@@ -230,8 +229,8 @@ st.session_state.setdefault("dt_prof", "")
 st.session_state.setdefault("lignes", default_site)
 st.session_state.setdefault("engins", default_engins)
 
-# البحث المباشر فـ photo A ثم photo B
-found_photo_path = get_agent_photo(matricule_search)
+# البحث المباشر الشامل عن الصورة
+found_photo_path, search_status = get_agent_photo(matricule_search)
 
 uploaded_photo = st.file_uploader(
     "Photo d'identité (JPG / PNG)", type=["jpg", "jpeg", "png"]
@@ -244,12 +243,9 @@ if uploaded_photo is not None:
     st.image(uploaded_photo, caption="Photo importée manuellement", width=120)
 elif found_photo_path:
     final_photo_source = found_photo_path
-    folder_used = os.path.basename(os.path.dirname(found_photo_path))
-    st.image(
-        found_photo_path,
-        caption=f"✅ Photo trouvée dans [{folder_used}]",
-        width=120,
-    )
+    st.image(found_photo_path, caption=f"✅ {search_status}", width=120)
+elif matricule_search.strip():
+    st.warning(f"⚠️ {search_status} ({matricule_search})")
 
 st.markdown("---")
 st.subheader("Informations de l'Agent")
@@ -272,7 +268,7 @@ lignes_sites = st.text_input("Lignes / Sites autorisés", key="lignes")
 materiel_locos = st.text_input("Matériel / Locos / Rames", key="engins")
 
 
-# توليد Excel
+# توليد ملف Excel
 def generate_custom_excel():
     template_map = {
         "CTR (Chef de Train)": "CTR.xlsx",
@@ -281,16 +277,15 @@ def generate_custom_excel():
         "CRMV (Conducteur de Manœuvre)": "CRMV.xlsx",
     }
     target_tmpl = template_map.get(selected_modele, "CFT.xlsx")
-    base_dir = os.path.dirname(os.path.abspath(__file__))
 
     tmpl_path = None
-    for f in os.listdir(base_dir):
+    for f in os.listdir(BASE_DIR):
         if f.lower() == target_tmpl.lower():
-            tmpl_path = os.path.join(base_dir, f)
+            tmpl_path = os.path.join(BASE_DIR, f)
             break
 
     if not tmpl_path:
-        tmpl_path = os.path.join(base_dir, target_tmpl)
+        tmpl_path = os.path.join(BASE_DIR, target_tmpl)
 
     wb = openpyxl.load_workbook(tmpl_path)
     sheet = wb.active
@@ -316,7 +311,7 @@ def generate_custom_excel():
 
         pil_img = pil_img.resize((100, 120))
 
-        img_temp_path = os.path.join(base_dir, "_temp_photo.png")
+        img_temp_path = os.path.join(BASE_DIR, "_temp_photo.png")
         pil_img.save(img_temp_path)
 
         xl_img = OpenpyxlImage(img_temp_path)
