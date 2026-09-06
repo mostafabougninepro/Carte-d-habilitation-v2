@@ -78,6 +78,24 @@ def get_agent_data(matricule):
                     if fonction_val.lower() == "nan":
                         fonction_val = ""
 
+                    # Recherche dynamique de la colonne Ligne / Site
+                    ligne_site_val = ""
+                    for col in df.columns:
+                        if "ligne" in col.lower() or "site" in col.lower():
+                            val = data.get(col, "")
+                            if pd.notnull(val) and str(val).lower() != "nan":
+                                ligne_site_val = str(val).strip()
+                                break
+
+                    # Recherche dynamique de la colonne Engin
+                    engin_val = ""
+                    for col in df.columns:
+                        if "engin" in col.lower() or "materiel" in col.lower():
+                            val = data.get(col, "")
+                            if pd.notnull(val) and str(val).lower() != "nan":
+                                engin_val = str(val).strip()
+                                break
+
                     return {
                         "Matricule": str(data.get("Matricule", "")),
                         "Nom": nom_val,
@@ -98,22 +116,8 @@ def get_agent_data(matricule):
                                 data.get("Dernier Eval", ""),
                             )
                         ),
-                        "Engin": str(data.get("Engin ", data.get("Engin", "")))
-                        if pd.notnull(
-                            data.get("Engin ", data.get("Engin", None))
-                        )
-                        else "",
-                        "Ligne_Site": str(
-                            data.get(
-                                "Ligne / Site ", data.get("Ligne / Site", "")
-                            )
-                        )
-                        if pd.notnull(
-                            data.get(
-                                "Ligne / Site ", data.get("Ligne / Site", None)
-                            )
-                        )
-                        else "",
+                        "Engin": engin_val,
+                        "Ligne_Site": ligne_site_val,
                     }
     except Exception as e:
         st.error(f"Erreur de lecture du registre : {e}")
@@ -130,18 +134,21 @@ options_modeles = [
 selected_modele = st.selectbox("Choisissez le modèle de carte :", options_modeles)
 modele_default_fonction = selected_modele.split("(")[-1].replace(")", "").strip()
 
-# التعيين التلقائي للعتاد والخطوط بحسب النموذج المختارات
-if "CTR" in selected_modele:
-    default_engins = "E1450, E1400, E1250, Z2M, DH400"
-    default_site = ""
+# التعيين التلقائي الافتراضي للعتاد والخطوط بحسب النموذج
+if "CRMV" in selected_modele:
+    default_engins = "E1450, E1400, Z2M, DH400, DM600"
+    default_site = "Site Voyageurs Kénitra"
 elif "CFT" in selected_modele:
     default_engins = "E1450, E1400, E1250, Z2M, DH400, DM600"
     default_site = "Site Voyageurs Kénitra"
-elif "CRMV" in selected_modele:
+elif "CTR" in selected_modele:
+    default_engins = "E1450, E1400, E1250, Z2M, DH400"
+    default_site = ""
+elif "CL" in selected_modele:
     default_engins = "E1450, E1400, Z2M"
-    default_site = "Site Voyageurs Kénitra"
+    default_site = ""
 else:
-    default_engins = "E1450, E1400, Z2M"
+    default_engins = ""
     default_site = ""
 
 if "last_matricule" not in st.session_state:
@@ -168,11 +175,18 @@ if matricule_search != st.session_state["last_matricule"]:
         st.session_state["dt_med"] = agent_found["Examen_Medical"]
         st.session_state["dt_psy"] = agent_found["Examen_Psychotechnique"]
         st.session_state["dt_prof"] = agent_found["Examen_Professionnel"]
-        st.session_state["lignes"] = (
-            agent_found["Ligne_Site"]
-            if agent_found["Ligne_Site"]
-            else default_site
-        )
+
+        # بالنسبة لـ CFT و CRMV تبقى دائماً Site Voyageurs Kénitra
+        # أما CTR و CL فيتم قراءتها من السجل (الجدول)
+        if "CFT" in selected_modele or "CRMV" in selected_modele:
+            st.session_state["lignes"] = "Site Voyageurs Kénitra"
+        else:
+            st.session_state["lignes"] = (
+                agent_found["Ligne_Site"]
+                if agent_found["Ligne_Site"]
+                else default_site
+            )
+
         st.session_state["engins"] = (
             agent_found["Engin"] if agent_found["Engin"] else default_engins
         )
