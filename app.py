@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ================= ================= =================
-# CSS PROPRE AVEC ALIGNEMENT ET TGV PREMIUM
+# CSS PROPRE (TITRE ET SOUS-TITRE SUR LA MÊME LIGNE)
 # ================= ================= =================
 CLEAN_CSS = """
 <style>
@@ -36,7 +36,7 @@ CLEAN_CSS = """
     .exec-header {
         background: linear-gradient(135deg, #0B1E36 0%, #16325B 100%);
         border-bottom: 4px solid #FF6B00;
-        padding: 26px 36px;
+        padding: 24px 32px;
         border-radius: 12px;
         box-shadow: 0 10px 20px rgba(11, 30, 54, 0.15);
         margin-bottom: 30px;
@@ -45,27 +45,31 @@ CLEAN_CSS = """
         justify-content: space-between;
     }
 
-    .exec-title-container {
-        padding-left: 10px; /* تحريك النص قليلاً لليمين */
+    .exec-title-wrapper {
+        display: flex;
+        align-items: baseline;
+        gap: 15px;
+        padding-left: 10px;
     }
 
     .exec-title-main {
         color: #FFFFFF;
-        font-size: 26px;
+        font-size: 22px;
         font-weight: 800;
         margin: 0;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
     }
 
     .exec-title-sub {
-        color: #94A3B8;
+        color: #FF8533;
         font-size: 13px;
-        font-weight: 600;
-        margin-top: 6px;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.8px;
+        border-left: 2px solid rgba(255, 255, 255, 0.3);
+        padding-left: 12px;
     }
 
     .exec-badge {
@@ -77,6 +81,7 @@ CLEAN_CSS = """
         font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
+        white-space: nowrap;
     }
 
     /* Form Fields Customization */
@@ -183,12 +188,12 @@ if not st.session_state["logged_in"]:
     st.stop()
 
 # ================= ================= =================
-# 3. HEADER EXECUTIVE ONCF & MENU (مع TGV الـوُّاعِر)
+# 3. HEADER EXECUTIVE ONCF & MENU (نفس السطر)
 # ================= ================= =================
 
 st.markdown(f"""
     <div class="exec-header">
-        <div class="exec-title-container">
+        <div class="exec-title-wrapper">
             <div class="exec-title-main">🚄⚡ Office National des Chemins de Fer</div>
             <div class="exec-title-sub">System management securite CCF.TC.Kenitra</div>
         </div>
