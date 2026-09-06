@@ -188,7 +188,7 @@ if not st.session_state["logged_in"]:
     st.stop()
 
 # ================= ================= =================
-# 3. HEADER EXECUTIVE ONCF & MENU (نفس السطر)
+# 3. HEADER EXECUTIVE ONCF & MENU
 # ================= ================= =================
 
 st.markdown(f"""
@@ -216,7 +216,6 @@ else:
 st.sidebar.markdown("---")
 st.sidebar.markdown("### ⚙️ Session")
 
-# زر Déconnexion واضح ومضمون 100%
 if st.sidebar.button("🚪 Déconnexion", use_container_width=True):
     st.session_state["logged_in"] = False
     st.session_state["current_user"] = None
@@ -263,7 +262,10 @@ def get_agent_photo(matricule):
     if not matricule or not str(matricule).strip():
         return None, "Matricule vide"
     target = str(matricule).strip().lower()
-    folders = ["photo A", "photo B", "photoA", "photoB"]
+    
+    # إضافة الدوسيات كاملة باش يقلب فيها (A, B, C)
+    folders = ["photo A", "photo B", "photo C", "photoA", "photoB", "photoC", "photo_c"]
+    
     for folder in folders:
         folder_path = os.path.join(BASE_DIR, folder)
         if os.path.exists(folder_path):
@@ -385,7 +387,7 @@ with col_p1:
         st.image(uploaded_photo, caption="Photo importée", width=115)
     elif found_photo_path:
         final_photo_source = found_photo_path
-        st.image(found_photo_path, caption="✅ Photo récupérée", width=115)
+        st.image(found_photo_path, caption=f"✅ {search_status}", width=115)
     elif matricule_search.strip():
         st.warning("⚠️ Photo non disponible")
 
