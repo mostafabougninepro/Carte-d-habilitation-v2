@@ -15,42 +15,46 @@ st.set_page_config(
 st.title("🎴 Générateur de Cartes d'Habilitation")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# المجلد الأب (علاود الهيكلة ديال GitHub عندك)
+PARENT_DIR = os.path.dirname(BASE_DIR)
 
 
-# دالة البحث الشاملة والمباشرة عن الصور
+# دالة البحث عن الصور التي تبحث في المجلد الحالي والمجلد الأب
 def get_agent_photo(matricule):
     if not matricule or not str(matricule).strip():
         return None, "Matricule vide"
 
     target = str(matricule).strip().lower()
+    folders_to_check = ["photo A", "photo B", "photoA", "photoB"]
 
-    # قائمة المجلدات المستهدفة
-    folders = ["photo A", "photo B", "photoA", "photoB"]
+    # قائمة المسارات المحتملة للمجلدات (داخل المجلد الحقيقي أو الأب)
+    possible_base_paths = [BASE_DIR, PARENT_DIR]
 
-    # 1. البحث المباشر في photo A و photo B
-    for folder in folders:
-        folder_path = os.path.join(BASE_DIR, folder)
+    for base in possible_base_paths:
+        for folder_name in folders_to_check:
+            folder_path = os.path.join(base, folder_name)
+            if os.path.exists(folder_path):
+                try:
+                    for file_name in os.listdir(folder_path):
+                        name_part, ext = os.path.splitext(file_name)
+                        if name_part.strip().lower() == target:
+                            full_path = os.path.join(folder_path, file_name)
+                            return (
+                                full_path,
+                                f"Photo trouvée dans [{folder_name}]",
+                            )
+                except Exception:
+                    continue
 
-        if os.path.exists(folder_path):
-            try:
-                for file_name in os.listdir(folder_path):
-                    name_part, ext = os.path.splitext(file_name)
-
-                    # المقارنة بعد إزالة المسافات الزائدة وتوحيد حالة الأحرف
-                    if name_part.strip().lower() == target:
-                        full_path = os.path.join(folder_path, file_name)
-                        return full_path, f"Photo trouvée dans [{folder}]"
-            except Exception:
-                continue
-
-    # 2. بحث احتياطي في جميع المجلدات والمسارات الفرعية
-    for root, dirs, files in os.walk(BASE_DIR):
-        for file_name in files:
-            name_part, ext = os.path.splitext(file_name)
-            if name_part.strip().lower() == target:
-                full_path = os.path.join(root, file_name)
-                folder_name = os.path.basename(root)
-                return full_path, f"Photo trouvée dans [{folder_name}]"
+    # بحث احتياطي شامل في كل شيء
+    for search_root in possible_base_paths:
+        for root, dirs, files in os.walk(search_root):
+            for file_name in files:
+                name_part, ext = os.path.splitext(file_name)
+                if name_part.strip().lower() == target:
+                    full_path = os.path.join(root, file_name)
+                    folder_name = os.path.basename(root)
+                    return full_path, f"Photo trouvée dans [{folder_name}]"
 
     return None, "Non trouvée dans les dossiers"
 
