@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ================= ================= =================
-# CSS PROPRE (TITRE ET SOUS-TITRE SUR LA MÊME LIGNE)
+# CSS PROPRE (AVEC BOUTON DÉCONNEXION DESIGN)
 # ================= ================= =================
 CLEAN_CSS = """
 <style>
@@ -97,7 +97,7 @@ CLEAN_CSS = """
         box-shadow: 0 0 0 2px rgba(11, 30, 54, 0.2) !important;
     }
 
-    /* Button Customization */
+    /* Standard Button Customization */
     .stButton>button {
         background: #0B1E36 !important;
         color: #FFFFFF !important;
@@ -111,6 +111,20 @@ CLEAN_CSS = """
     .stButton>button:hover {
         background: #FF6B00 !important;
         transform: translateY(-2px) !important;
+    }
+
+    /* Custom Logout Button Style inside Sidebar */
+    div[data-testid="stSidebar"] button {
+        background-color: #FEF2F2 !important;
+        color: #DC2626 !important;
+        border: 1px solid #FCA5A5 !important;
+        font-weight: 700 !important;
+    }
+
+    div[data-testid="stSidebar"] button:hover {
+        background-color: #DC2626 !important;
+        color: #FFFFFF !important;
+        border-color: #DC2626 !important;
     }
 
     /* Hide default Streamlit elements */
@@ -188,7 +202,7 @@ if not st.session_state["logged_in"]:
     st.stop()
 
 # ================= ================= =================
-# 3. HEADER EXECUTIVE ONCF & MENU (نفس السطر)
+# 3. HEADER EXECUTIVE ONCF & MENU
 # ================= ================= =================
 
 st.markdown(f"""
@@ -213,7 +227,10 @@ if st.session_state["user_role"] == "Admin":
 else:
     menu = "🪪 Cartes d'Habilitation"
 
+st.sidebar.markdown("<br><br>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
+
+# زر Déconnexion واضح ومقاد فـ Sidebar
 if st.sidebar.button("Déconnexion 🚪", use_container_width=True):
     st.session_state["logged_in"] = False
     st.session_state["current_user"] = None
