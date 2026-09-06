@@ -11,16 +11,16 @@ import streamlit as st
 # CONFIGURATION DE LA PAGE
 # ================= ================= =================
 st.set_page_config(
-    page_title="ONCF — Management Sécurité Kénitra",
+    page_title="ONCF — Management Sécurité",
     page_icon="🚄",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ================= ================= =================
-# LOGIN INTERFACE EXCLUSIVE HIGH-CONTRAST CSS
+# CSS PROPRE (TITRE ET SOUS-TITRE SUR LA MÊME LIGNE)
 # ================= ================= =================
-LOGIN_CSS = """
+CLEAN_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -28,99 +28,99 @@ LOGIN_CSS = """
         font-family: 'Inter', sans-serif !important;
     }
 
-    /* Background global propre */
     .stApp {
-        background-color: #090D16;
+        background-color: #F4F7F9;
+    }
+
+    /* Top Executive Header */
+    .exec-header {
+        background: linear-gradient(135deg, #0B1E36 0%, #16325B 100%);
+        border-bottom: 4px solid #FF6B00;
+        padding: 24px 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 20px rgba(11, 30, 54, 0.15);
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .exec-title-wrapper {
+        display: flex;
+        align-items: baseline;
+        gap: 15px;
+        padding-left: 10px;
+    }
+
+    .exec-title-main {
         color: #FFFFFF;
-    }
-
-    /* Carte de Connexion Centralisée */
-    .login-container {
-        background: #131B2E;
-        border: 1px solid #2A3B5C;
-        border-top: 5px solid #FF6B00;
-        padding: 45px 40px;
-        border-radius: 16px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
-    }
-
-    .login-title-main {
-        color: #FF6B00;
-        font-size: 28px;
+        font-size: 22px;
         font-weight: 800;
-        letter-spacing: 1.5px;
-        text-align: center;
-        margin-bottom: 2px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-    .login-title-sub {
-        color: #FFFFFF;
-        font-size: 16px;
+    .exec-title-sub {
+        color: #FF8533;
+        font-size: 13px;
         font-weight: 700;
-        text-align: center;
-        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-left: 2px solid rgba(255, 255, 255, 0.3);
+        padding-left: 12px;
     }
 
-    .login-title-desc {
-        color: #38BDF8;
+    .exec-badge {
+        background: rgba(255, 107, 0, 0.2);
+        color: #FF8533;
+        border: 1px solid rgba(255, 107, 0, 0.4);
+        padding: 6px 16px;
+        border-radius: 30px;
         font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1.2px;
-        text-align: center;
-        margin-bottom: 25px;
+        white-space: nowrap;
     }
 
-    /* Visibilité Totale des Labels des Inputs de Connexion */
-    .login-form-container label {
-        color: #FFFFFF !important;
-        font-weight: 600 !important;
-        font-size: 14px !important;
+    /* Form Fields Customization */
+    .stTextInput input, .stSelectbox select {
+        border-radius: 6px !important;
+        border: 1px solid #CBD5E1 !important;
+        padding: 10px 14px !important;
+        background-color: #FFFFFF !important;
     }
 
-    .login-form-container input {
-        border-radius: 8px !important;
-        border: 1px solid #334155 !important;
-        padding: 12px 14px !important;
-        background-color: #1E293B !important;
-        color: #FFFFFF !important;
-        font-weight: 600 !important;
-        font-size: 15px !important;
+    .stTextInput input:focus {
+        border-color: #0B1E36 !important;
+        box-shadow: 0 0 0 2px rgba(11, 30, 54, 0.2) !important;
     }
 
-    .login-form-container input:focus {
-        border-color: #FF6B00 !important;
-        box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.3) !important;
-    }
-
-    /* Bouton de Connexion Pro et Visible */
-    .login-btn-container button {
-        background: #FF6B00 !important;
+    /* Standard Button Customization */
+    .stButton>button {
+        background: #0B1E36 !important;
         color: #FFFFFF !important;
         border-radius: 8px !important;
         border: none !important;
         font-weight: 700 !important;
-        font-size: 16px !important;
-        padding: 12px 20px !important;
-        width: 100% !important;
-        box-shadow: 0 6px 15px rgba(255, 107, 0, 0.4) !important;
-        transition: all 0.2s ease !important;
-        margin-top: 10px;
+        padding: 10px 20px !important;
+        transition: all 0.2s !important;
     }
 
-    .login-btn-container button:hover {
-        background: #E65C00 !important;
-        transform: translateY(-1px);
+    .stButton>button:hover {
+        background: #FF6B00 !important;
+        transform: translateY(-2px) !important;
     }
 
-    /* Masquer les éléments parasites de Streamlit */
+    /* Hide default Streamlit elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 </style>
 """
 
-st.markdown(LOGIN_CSS, unsafe_allow_html=True)
+st.markdown(CLEAN_CSS, unsafe_allow_html=True)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "users_db.json")
@@ -154,7 +154,7 @@ st.session_state.setdefault("current_user", None)
 st.session_state.setdefault("user_role", None)
 
 # ================= ================= =================
-# 2. MODULE DE CONNEXION EXCLUSIF (LOGIN PAGE PRO)
+# 2. MODULE DE CONNEXION (LOGIN)
 # ================= ================= =================
 if not st.session_state["logged_in"]:
     st.markdown("<br><br>", unsafe_allow_html=True)
@@ -162,21 +162,18 @@ if not st.session_state["logged_in"]:
     
     with c2:
         st.markdown("""
-            <div class="login-container">
-                <div class="login-title-main">ONCF</div>
-                <div class="login-title-sub">Office National des Chemins de Fer</div>
-                <div class="login-title-desc">System Management Sécurité CCF.TC.Kenitra</div>
-                <hr style="border: 0; height: 1px; background: #2A3B5C; margin: 20px 0;">
+            <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border-top: 4px solid #FF6B00;">
+                <div style="font-size: 48px; margin-bottom: 10px;">🚄⚡</div>
+                <h2 style="color: #0B1E36; font-weight: 800; margin: 0; font-size: 24px;">ONCF</h2>
+                <p style="color: #64748B; font-size: 13px; font-weight: 600; text-transform: uppercase;">System management securite CCF.TC.Kenitra</p>
+                <hr style="border: 0; height: 1px; background: #E2E8F0; margin: 20px 0;">
             </div>
         """, unsafe_allow_html=True)
         
-        # Formulaire natif englobé dans la classe pour cibler proprement les textes et inputs
-        st.markdown('<div class="login-form-container">', unsafe_allow_html=True)
         with st.form("login_form"):
             input_matricule = st.text_input("Matricule / Identifiant").strip().upper()
             input_password = st.text_input("Mot de passe", type="password")
             st.markdown("<br>", unsafe_allow_html=True)
-            
             submit_login = st.form_submit_button("Se Connecter", use_container_width=True)
             
             if submit_login:
@@ -187,22 +184,22 @@ if not st.session_state["logged_in"]:
                     st.session_state["user_role"] = users[input_matricule].get("role", "Utilisateur")
                     st.rerun()
                 else:
-                    st.error("❌ Identifiants incorrects. Veuillez réessayer.")
-        st.markdown('</div>', unsafe_allow_html=True)
+                    st.error("❌ Identifiants incorrects.")
     st.stop()
 
 # ================= ================= =================
-# 3. HEADER INTERne ONCF & MENU (APRES CONNEXION)
+# 3. HEADER EXECUTIVE ONCF & MENU (نفس السطر)
 # ================= ================= =================
+
 st.markdown(f"""
-    <div style="background: #1E293B; border-bottom: 3px solid #FF6B00; padding: 20px 30px; border-radius: 10px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: baseline; gap: 12px;">
-            <div style="color: #FFFFFF; font-size: 20px; font-weight: 700; margin: 0;">ONCF — Sécurité</div>
-            <div style="color: #38BDF8; font-size: 12px; font-weight: 600; text-transform: uppercase; border-left: 1px solid #475569; padding-left: 10px;">CCF.TC.Kénitra</div>
+    <div class="exec-header">
+        <div class="exec-title-wrapper">
+            <div class="exec-title-main">🚄⚡ Office National des Chemins de Fer</div>
+            <div class="exec-title-sub">System management securite CCF.TC.Kenitra</div>
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="background: rgba(255, 107, 0, 0.2); color: #FF9933; border: 1px solid #FF6B00; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase;">{st.session_state['user_role']}</div>
-            <div style="color: #FFFFFF; font-size: 13px; font-weight: 600; background: #131B2E; padding: 6px 14px; border-radius: 6px; border: 1px solid #2A3B5C;">
+            <div class="exec-badge">{st.session_state['user_role']}</div>
+            <div style="color: white; font-size: 14px; font-weight: 600;">
                 👤 {st.session_state['current_user']}
             </div>
         </div>
@@ -217,10 +214,9 @@ else:
     menu = "🪪 Cartes d'Habilitation"
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("### ⚙️ Session Active")
-st.sidebar.info(f"**Identifiant:** `{st.session_state['current_user']}`\n\n**Rôle:** {st.session_state['user_role']}")
-st.sidebar.markdown("<br>", unsafe_allow_html=True)
+st.sidebar.markdown("### ⚙️ Session")
 
+# زر Déconnexion واضح ومضمون 100%
 if st.sidebar.button("🚪 Déconnexion", use_container_width=True):
     st.session_state["logged_in"] = False
     st.session_state["current_user"] = None
