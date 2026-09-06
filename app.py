@@ -18,124 +18,113 @@ st.set_page_config(
 )
 
 # ================= ================= =================
-# MODERN ULTRA-EXECUTIVE CSS (DARK MODE PREMIUM)
+# PROFESSIONAL CORPORATE DARK CSS (CLEAN & MINIMALIST)
 # ================= ================= =================
-EXECUTIVE_CSS = """
+CORPORATE_CSS = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
     html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-family: 'Inter', sans-serif !important;
     }
 
     .stApp {
-        background: radial-gradient(circle at 50% 20%, #111827 0%, #0B0F19 100%);
-        color: #F3F4F6;
+        background-color: #0F172A;
+        color: #F8FAFC;
     }
 
     /* Top Executive Header */
     .exec-header {
-        background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.9) 100%);
-        border: 1px solid rgba(255, 107, 0, 0.3);
-        border-bottom: 4px solid #FF6B00;
-        padding: 24px 32px;
-        border-radius: 16px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-        margin-bottom: 30px;
+        background: #1E293B;
+        border-bottom: 3px solid #FF6B00;
+        padding: 20px 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        margin-bottom: 25px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        backdrop-filter: blur(10px);
     }
 
     .exec-title-wrapper {
         display: flex;
         align-items: baseline;
-        gap: 15px;
+        gap: 12px;
     }
 
     .exec-title-main {
         color: #FFFFFF;
-        font-size: 24px;
-        font-weight: 800;
+        font-size: 20px;
+        font-weight: 700;
         margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        letter-spacing: -0.5px;
+        letter-spacing: -0.3px;
     }
 
     .exec-title-sub {
-        color: #FF8533;
-        font-size: 13px;
-        font-weight: 700;
+        color: #94A3B8;
+        font-size: 12px;
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        border-left: 2px solid rgba(255, 255, 255, 0.2);
-        padding-left: 14px;
+        letter-spacing: 0.5px;
+        border-left: 1px solid #475569;
+        padding-left: 10px;
     }
 
     .exec-badge {
         background: rgba(255, 107, 0, 0.15);
         color: #FF8533;
-        border: 1px solid rgba(255, 107, 0, 0.4);
-        padding: 6px 16px;
-        border-radius: 30px;
-        font-size: 12px;
+        border: 1px solid rgba(255, 107, 0, 0.3);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
 
-    /* Glassmorphism Login Container */
-    .login-container {
-        background: rgba(17, 24, 39, 0.85);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Professional Clean Login Box */
+    .login-box {
+        background: #1E293B;
+        border: 1px solid #334155;
         border-top: 4px solid #FF6B00;
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(15px);
+        padding: 35px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
     }
 
-    /* Form Fields Customization */
+    /* Form Fields */
     .stTextInput input, .stSelectbox select {
-        border-radius: 8px !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        padding: 12px 16px !important;
-        background-color: rgba(30, 41, 59, 0.6) !important;
+        border-radius: 6px !important;
+        border: 1px solid #475569 !important;
+        padding: 10px 14px !important;
+        background-color: #0F172A !important;
         color: #FFFFFF !important;
         font-weight: 500 !important;
     }
 
     .stTextInput input:focus {
         border-color: #FF6B00 !important;
-        box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.25) !important;
-        background-color: rgba(30, 41, 59, 0.9) !important;
+        box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.2) !important;
     }
 
-    /* Modern Buttons */
+    /* Action Buttons */
     .stButton>button {
-        background: linear-gradient(135deg, #FF6B00 0%, #E65C00 100%) !important;
+        background: #FF6B00 !important;
         color: #FFFFFF !important;
-        border-radius: 8px !important;
+        border-radius: 6px !important;
         border: none !important;
         font-weight: 700 !important;
-        padding: 12px 24px !important;
-        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3) !important;
-        transition: all 0.3s ease !important;
+        padding: 10px 20px !important;
+        transition: background 0.2s ease !important;
     }
 
     .stButton>button:hover {
-        background: linear-gradient(135deg, #FF8533 0%, #FF6B00 100%) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(255, 107, 0, 0.5) !important;
+        background: #E65C00 !important;
     }
 
-    /* Sidebar Refinement */
+    /* Sidebar Clean Look */
     [data-testid="stSidebar"] {
-        background-color: #0B0F19 !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        background-color: #0B132B !important;
+        border-right: 1px solid #1E293B;
     }
 
     /* Hide default Streamlit elements */
@@ -145,7 +134,7 @@ EXECUTIVE_CSS = """
 </style>
 """
 
-st.markdown(EXECUTIVE_CSS, unsafe_allow_html=True)
+st.markdown(CORPORATE_CSS, unsafe_allow_html=True)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "users_db.json")
@@ -179,21 +168,21 @@ st.session_state.setdefault("current_user", None)
 st.session_state.setdefault("user_role", None)
 
 # ================= ================= =================
-# 2. MODULE DE CONNEXION (LOGIN - ULTRA MODERNE)
+# 2. MODULE DE CONNEXION (LOGIN - CLEAN CORPORATE)
 # ================= ================= =================
 if not st.session_state["logged_in"]:
     st.markdown("<br><br>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns([1, 1.3, 1])
+    c1, c2, c3 = st.columns([1, 1.1, 1])
     
     with c2:
         st.markdown("""
-            <div class="login-container">
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <div style="font-size: 52px; margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(255,107,0,0.4));">🚄⚡</div>
-                    <h2 style="color: #FFFFFF; font-weight: 800; margin: 0; font-size: 26px; letter-spacing: -0.5px;">ONCF</h2>
-                    <p style="color: #94A3B8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-top: 6px;">System Management Sécurité CCF.TC.Kenitra</p>
+            <div class="login-box">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="color: #FF6B00; font-size: 22px; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px;">ONCF</div>
+                    <div style="color: #FFFFFF; font-size: 15px; font-weight: 700;">Office National des Chemins de Fer</div>
+                    <p style="color: #94A3B8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 6px;">System Management Sécurité CCF.TC.Kenitra</p>
                 </div>
-                <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
+                <hr style="border: 0; height: 1px; background: #334155; margin: 15px 0;">
             </div>
         """, unsafe_allow_html=True)
         
@@ -221,12 +210,12 @@ if not st.session_state["logged_in"]:
 st.markdown(f"""
     <div class="exec-header">
         <div class="exec-title-wrapper">
-            <div class="exec-title-main">🚄⚡ Office National des Chemins de Fer</div>
-            <div class="exec-title-sub">System Management Sécurité CCF.TC.Kenitra</div>
+            <div class="exec-title-main">ONCF — Sécurité</div>
+            <div class="exec-title-sub">CCF.TC.Kénitra</div>
         </div>
-        <div style="display: flex; align-items: center; gap: 18px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
             <div class="exec-badge">{st.session_state['user_role']}</div>
-            <div style="color: #E2E8F0; font-size: 14px; font-weight: 600; background: rgba(255,255,255,0.05); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="color: #E2E8F0; font-size: 13px; font-weight: 600; background: #0F172A; padding: 5px 12px; border-radius: 6px; border: 1px solid #334155;">
                 👤 {st.session_state['current_user']}
             </div>
         </div>
