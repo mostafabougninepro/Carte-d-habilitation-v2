@@ -22,7 +22,6 @@ USERS_FILE = os.path.join(BASE_DIR, "users_db.json")
 def load_users():
     """تحميل حسابات المستخدمين من ملف JSON"""
     if not os.path.exists(USERS_FILE):
-        # حساب الأدمن الافتراضي (يمكنك تغييره لاحقاً)
         default_users = {
             "ADMIN": {
                 "password": "adminpassword123",
@@ -65,12 +64,6 @@ if not st.session_state["logged_in"]:
             font-size: 32px;
             font-weight: bold;
             color: #1E3A8A;
-            margin-bottom: 5px;
-        }
-        .login-subtitle {
-            text-align: center;
-            font-size: 18px;
-            color: #4B5563;
             margin-bottom: 30px;
         }
         </style>
@@ -79,7 +72,6 @@ if not st.session_state["logged_in"]:
     )
 
     st.markdown("<div class='login-title'>🛡️ Système Management Sécurité</div>", unsafe_allow_html=True)
-    st.markdown("<div class='login-subtitle'>Plateforme de Gestion des Cartes d'Habilitation</div>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -98,13 +90,12 @@ if not st.session_state["logged_in"]:
             else:
                 st.error("❌ Matricule ou Mot de passe incorrect !")
 
-    st.stop()  # إيقاف التنفيذ حتال يتسجل الدخول
+    st.stop()
 
 # ================= ================= =================
 # 4. التطبيق الرئيسي بعد تسجيل الدخول
 # ================= ================= =================
 
-# الشريط العلوي (Header & Logout)
 top_col1, top_col2 = st.columns([3, 1])
 with top_col1:
     st.write(f"👤 Connecté en tant que : **{st.session_state['current_user']}** ({st.session_state['user_role']})")
@@ -117,7 +108,6 @@ with top_col2:
 
 st.title("🛡️ Système Management Sécurité")
 
-# القوائم المتاحة حسب الصلاحيات
 if st.session_state["user_role"] == "Admin":
     menu = st.sidebar.radio("📌 Navigation", ["🪪 Générateur de Cartes", "👥 Gestion des Utilisateurs"])
 else:
@@ -132,7 +122,6 @@ if menu == "👥 Gestion des Utilisateurs":
 
     users = load_users()
 
-    # نموذج إضافة مستخدم جديد
     with st.form("add_user_form"):
         st.subheader("➕ Ajouter un nouvel utilisateur")
         new_mat = st.text_input("Matricule / Identifiant").strip().upper()
