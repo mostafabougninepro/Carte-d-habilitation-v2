@@ -11,93 +11,126 @@ import streamlit as st
 # CONFIGURATION DE LA PAGE
 # ================= ================= =================
 st.set_page_config(
-    page_title="ONCF - Système Management Sécurité",
+    page_title="ONCF — Management Sécurité",
     page_icon="🚆",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ================= ================= =================
-# STYLES CSS PERSONNALISÉS (CHARTE GRAPHIQUE ONCF)
+# STYLES CSS SUR-MESURE (DESIGN ONCF PREMIUM)
 # ================= ================= =================
 ONCF_CSS = """
 <style>
-    /* Background & Font */
-    .main {
-        background-color: #F8FAFC;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Global Styles */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .stApp {
+        background-color: #F1F5F9;
+    }
+    
+    /* ONCF Top Brand Strip */
+    .oncf-brand-bar {
+        height: 6px;
+        background: linear-gradient(90deg, #E65100 0%, #D81B60 50%, #0F2C59 100%);
+        border-radius: 3px;
+        margin-bottom: 20px;
     }
     
     /* Header Banner */
-    .oncf-header {
-        background: linear-gradient(135deg, #0F2C59 0%, #1E40AF 100%);
-        color: white;
-        padding: 24px 30px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px -5px rgba(15, 44, 89, 0.3);
+    .oncf-header-card {
+        background: #FFFFFF;
+        padding: 24px 32px;
+        border-radius: 16px;
+        border-left: 8px solid #E65100;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
         margin-bottom: 25px;
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: center;
     }
     
-    .oncf-title {
-        font-size: 28px;
+    .oncf-main-title {
+        font-size: 26px;
         font-weight: 800;
-        letter-spacing: 0.5px;
+        color: #0F2C59;
         margin: 0;
-        color: #FFFFFF;
+        letter-spacing: -0.5px;
     }
     
-    .oncf-badge {
-        background-color: #E65100;
-        color: white;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
+    .oncf-subtitle {
+        color: #64748B;
+        font-size: 14px;
+        margin-top: 4px;
+        font-weight: 500;
     }
     
-    /* Login Box Style */
-    .login-card {
+    /* Login Box */
+    .login-container {
         background: #FFFFFF;
         padding: 40px;
-        border-radius: 16px;
-        border-top: 6px solid #E65100;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        margin-top: 20px;
+        border-radius: 20px;
+        box-shadow: 0 20px 30px -10px rgba(15, 44, 89, 0.1);
+        border: 1px solid #E2E8F0;
     }
     
     /* Section Cards */
-    .css-card {
+    .content-card {
         background: #FFFFFF;
-        padding: 25px;
-        border-radius: 12px;
+        padding: 24px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         border: 1px solid #E2E8F0;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         margin-bottom: 20px;
     }
+    
+    .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0F2C59;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 2px solid #F1F5F9;
+        padding-bottom: 8px;
+    }
 
-    /* Custom Buttons */
+    /* Buttons Styling */
     .stButton>button {
-        background-color: #0F2C59 !important;
+        background: linear-gradient(135deg, #0F2C59 0%, #1E3A8A 100%) !important;
         color: white !important;
-        border-radius: 8px !important;
+        border-radius: 10px !important;
         border: none !important;
-        font-weight: 600 !important;
-        padding: 10px 20px !important;
-        transition: all 0.3s ease !important;
+        font-weight: 700 !important;
+        padding: 12px 24px !important;
+        font-size: 15px !important;
+        box-shadow: 0 4px 12px rgba(15, 44, 89, 0.2) !important;
+        transition: all 0.25s ease !important;
     }
     
     .stButton>button:hover {
-        background-color: #E65100 !important;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(230, 81, 0, 0.3) !important;
+        background: linear-gradient(135deg, #E65100 0%, #D81B60 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 18px rgba(230, 81, 0, 0.35) !important;
     }
 
-    /* Hide Streamlit Default Elements */
+    /* Form Fields */
+    .stTextInput input {
+        border-radius: 8px !important;
+        border: 1px solid #CBD5E1 !important;
+        padding: 10px 14px !important;
+    }
+    .stTextInput input:focus {
+        border-color: #E65100 !important;
+        box-shadow: 0 0 0 3px rgba(230, 81, 0, 0.15) !important;
+    }
+
+    /* Hide Streamlit UI elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
@@ -132,7 +165,6 @@ def save_users(users):
     with open(USERS_FILE, "w", encoding="utf-8") as f:
         json.dump(users, f, ensure_ascii=False, indent=4)
 
-# Session State Initialization
 st.session_state.setdefault("logged_in", False)
 st.session_state.setdefault("current_user", None)
 st.session_state.setdefault("user_role", None)
@@ -141,16 +173,18 @@ st.session_state.setdefault("user_role", None)
 # 2. PAGE DE CONNEXION (LOGIN)
 # ================= ================= =================
 if not st.session_state["logged_in"]:
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    col_l1, col_l2, col_l3 = st.columns([1, 1.8, 1])
+    st.markdown("<div class='oncf-brand-bar'></div>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
     
     with col_l2:
         st.markdown("""
-            <div class="login-card">
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <span style="font-size: 50px;">🚆</span>
-                    <h2 style="color: #0F2C59; font-weight: 800; margin-top: 10px; margin-bottom: 5px;">ONCF</h2>
-                    <p style="color: #64748B; font-weight: 600; font-size: 15px;">Système Management Sécurité</p>
+            <div class="login-container">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="font-size: 48px; margin-bottom: 10px;">🚆</div>
+                    <h2 style="color: #0F2C59; font-weight: 800; margin: 0; font-size: 24px;">ONCF</h2>
+                    <p style="color: #64748B; font-size: 14px; margin-top: 4px; font-weight: 600;">Système Management Sécurité</p>
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -159,7 +193,7 @@ if not st.session_state["logged_in"]:
             input_matricule = st.text_input("Matricule / Identifiant", placeholder="Ex: ADMIN").strip().upper()
             input_password = st.text_input("Mot de passe", type="password", placeholder="••••••••")
             st.markdown("<br>", unsafe_allow_html=True)
-            submit_login = st.form_submit_button("Se Connecter", use_container_width=True)
+            submit_login = st.form_submit_button("Se Connecter 🔑", use_container_width=True)
             
             if submit_login:
                 users = load_users()
@@ -175,57 +209,57 @@ if not st.session_state["logged_in"]:
     st.stop()
 
 # ================= ================= =================
-# 3. EN-TÊTE ET NAVIGATION (APPLICATION PRINCIPALE)
+# 3. HEADER & NAVIGATION
 # ================= ================= =================
 
-# Banner Header ONCF
+st.markdown("<div class='oncf-brand-bar'></div>", unsafe_allow_html=True)
+
+# Top Banner
 st.markdown(f"""
-    <div class="oncf-header">
+    <div class="oncf-header-card">
         <div>
-            <h1 class="oncf-title">🚆 Office National des Chemins de Fer</h1>
-            <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Système Management Sécurité — Direction Sécurité & Exploitation</p>
+            <h1 class="oncf-main-title">🚆 Office National des Chemins de Fer</h1>
+            <div class="oncf-subtitle">Système Management Sécurité — Direction Sécurité & Exploitation</div>
         </div>
-        <div class="oncf-badge">{st.session_state['user_role']}</div>
+        <div style="text-align: right;">
+            <span style="background-color: #0F2C59; color: white; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 13px;">
+                👤 {st.session_state['current_user']} ({st.session_state['user_role']})
+            </span>
+        </div>
     </div>
 """, unsafe_allow_html=True)
 
-# User bar & Logout
-top_col1, top_col2 = st.columns([4, 1])
-with top_col1:
-    st.markdown(f"👤 Connecté : **{st.session_state['current_user']}**")
-with top_col2:
-    if st.button("Déconnexion 🚪", use_container_width=True):
-        st.session_state["logged_in"] = False
-        st.session_state["current_user"] = None
-        st.session_state["user_role"] = None
-        st.rerun()
-
-# Sidebar
-st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/d/d5/ONCF_Logo.svg", width=180) if False else None
-st.sidebar.markdown("### 📌 Menu Principal")
-
+# Sidebar Menu
+st.sidebar.markdown("### 📌 Navigation")
 if st.session_state["user_role"] == "Admin":
-    menu = st.sidebar.radio("Navigation :", ["🪪 Cartes d'Habilitation", "👥 Gestion des Utilisateurs"])
+    menu = st.sidebar.radio("Sélecteur de module :", ["🪪 Cartes d'Habilitation", "👥 Gestion des Utilisateurs"])
 else:
     menu = "🪪 Cartes d'Habilitation"
+
+if st.sidebar.button("Déconnexion 🚪", use_container_width=True):
+    st.session_state["logged_in"] = False
+    st.session_state["current_user"] = None
+    st.session_state["user_role"] = None
+    st.rerun()
 
 # ================= ================= =================
 # 4. GESTION DES UTILISATEURS (ADMIN)
 # ================= ================= =================
 if menu == "👥 Gestion des Utilisateurs":
-    st.subheader("👥 Administration des Accès")
+    st.markdown("### 👥 Administration des Comptes")
     
     col_u1, col_u2 = st.columns([1, 1])
     
     with col_u1:
-        st.markdown("#### ➕ Ajouter un Utilisateur")
+        st.markdown("<div class='content-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='section-title'>➕ Ajouter un Utilisateur</div>", unsafe_allow_html=True)
         users = load_users()
         with st.form("add_user_form"):
-            new_mat = st.text_input("Matricule").strip().upper()
+            new_mat = st.text_input("Matricule / Identifiant").strip().upper()
             new_pass = st.text_input("Mot de passe", type="password")
             new_role = st.selectbox("Rôle", ["Utilisateur", "Admin"])
             
-            if st.form_submit_button("Enregistrer l'utilisateur", use_container_width=True):
+            if st.form_submit_button("Créer le compte", use_container_width=True):
                 if not new_mat or not new_pass:
                     st.error("Veuillez remplir tous les champs.")
                 elif new_mat in users:
@@ -233,21 +267,22 @@ if menu == "👥 Gestion des Utilisateurs":
                 else:
                     users[new_mat] = {"password": new_pass, "role": new_role}
                     save_users(users)
-                    st.success(f"Utilisateur {new_mat} ajouté avec succès !")
+                    st.success(f"Utilisateur {new_mat} créé avec succès !")
                     st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
                     
     with col_u2:
-        st.markdown("#### 📋 Utilisateurs Enregistrés")
+        st.markdown("<div class='content-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='section-title'>📋 Liste des Utilisateurs</div>", unsafe_allow_html=True)
         users_list = [{"Matricule": m, "Rôle": d.get("role", "Utilisateur")} for m, d in users.items()]
         st.dataframe(pd.DataFrame(users_list), use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
         
     st.stop()
 
 # ================= ================= =================
-# 5. MOTEUR ET GENERATION DE CARTES
+# 5. GENERATEUR DE CARTES
 # ================= ================= =================
-st.subheader("🪪 Générateur de Cartes d'Habilitation")
-
 def get_agent_photo(matricule):
     if not matricule or not str(matricule).strip():
         return None, "Matricule vide"
@@ -332,12 +367,12 @@ def determine_template_and_defaults(fonction):
     else:
         return "CTR.xlsx", "E1450, E1400, E1250, Z2M, DH400", ""
 
-# Search Box Section
-st.session_state.setdefault("last_matricule", "")
+# Search Box Container
+st.markdown("<div class='content-card'>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'>🔍 Recherche & Identification de l'Agent</div>", unsafe_allow_html=True)
 
-col_s1, col_s2 = st.columns([3, 1])
-with col_s1:
-    matricule_search = st.text_input("🔍 Recherche par Matricule Agent :", placeholder="Ex: 47607A")
+st.session_state.setdefault("last_matricule", "")
+matricule_search = st.text_input("Saisir le Matricule de l'agent :", placeholder="Ex: 47607A")
 
 if matricule_search != st.session_state["last_matricule"]:
     st.session_state["last_matricule"] = matricule_search
@@ -363,24 +398,27 @@ if matricule_search != st.session_state["last_matricule"]:
     st.session_state["lignes"] = dates_info.get("Ligne_Site") or def_site
     st.session_state["engins"] = dates_info.get("Engin") or def_engins
 
-# Photo display
 found_photo_path, search_status = get_agent_photo(matricule_search)
 final_photo_source = None
 
 col_p1, col_p2 = st.columns([1, 3])
 with col_p1:
-    uploaded_photo = st.file_uploader("Photo d'identité", type=["jpg", "jpeg", "png"])
+    uploaded_photo = st.file_uploader("Photo d'identité (Optionnel)", type=["jpg", "jpeg", "png"])
     if uploaded_photo is not None:
         final_photo_source = uploaded_photo
-        st.image(uploaded_photo, caption="Photo importée", width=110)
+        st.image(uploaded_photo, caption="Photo chargée", width=120)
     elif found_photo_path:
         final_photo_source = found_photo_path
-        st.image(found_photo_path, caption=f"✅ Photo trouvée", width=110)
+        st.image(found_photo_path, caption="✅ Photo automatique", width=120)
     elif matricule_search.strip():
-        st.error("⚠️ Photo non trouvable")
+        st.warning("⚠️ Photo non trouvée")
 
-# Form Data
-st.markdown("---")
+st.markdown("</div>", unsafe_allow_html=True)
+
+# Agent Info Form Card
+st.markdown("<div class='content-card'>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'>📝 Informations sur la Carte</div>", unsafe_allow_html=True)
+
 col1, col2 = st.columns(2)
 
 with col1:
@@ -397,6 +435,8 @@ with col2:
 
 lignes_sites = st.text_input("Lignes / Sites autorisés", key="lignes")
 materiel_locos = st.text_input("Matériel / Locos / Rames", key="engins")
+
+st.markdown("</div>", unsafe_allow_html=True)
 
 def generate_custom_excel():
     tmpl_filename, _, _ = determine_template_and_defaults(fonction_input)
@@ -433,16 +473,19 @@ def generate_custom_excel():
     output.seek(0)
     return output
 
-st.markdown("<br>", unsafe_allow_html=True)
+# Generate & Download Section
 if st.button("⚡ Générer la Carte d'Habilitation", use_container_width=True):
     excel_file = generate_custom_excel()
-    clean_nom = nom_input.strip() if nom_input.strip() else "Agent"
+    clean_nom = nom_input.strip().upper() if nom_input.strip() else "AGENT"
     
-    st.success("✅ Carte générée avec succès !")
+    # تسمية الملف باسم Carte_NOM.xlsx
+    file_download_name = f"Carte_{clean_nom}.xlsx"
+
+    st.success(f"✅ Carte de {clean_nom} générée avec succès !")
     st.download_button(
-        label="📥 Télécharger la Carte Excel",
+        label=f"📥 Télécharger {file_download_name}",
         data=excel_file,
-        file_name=f"Carte_ONCF_{clean_nom}_{matricule_input}.xlsx",
+        file_name=file_download_name,
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         use_container_width=True
     )
