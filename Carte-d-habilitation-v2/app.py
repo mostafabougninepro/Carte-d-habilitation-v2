@@ -15,6 +15,42 @@ st.set_page_config(
 st.title("🎴 Générateur de Cartes d'Habilitation")
 
 
+# دالة للبحث عن صورة الموظف داخل المجلدات photo A و photo B
+def get_agent_photo(matricule):
+    if not matricule:
+        return None
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # المجلدات التي سيتم البحث فيها بالترتيب
+    photo_folders = [
+        os.path.join(base_dir, "photo A"),
+        os.path.join(base_dir, "photo B"),
+        os.path.join(base_dir, "photos"),  # للضمان فقط
+    ]
+
+    clean_mat = str(matricule).strip().lower()
+    extensions = [".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG"]
+
+    for folder in photo_folders:
+        if os.path.exists(folder):
+            # 1. بحث مباشر بالامتدادات المعروفة
+            for ext in extensions:
+                photo_path = os.path.join(
+                    folder, f"{str(matricule).strip()}{ext}"
+                )
+                if os.path.exists(photo_path):
+                    return photo_path
+
+            # 2. بحث مطاطي يتجاهل حالة الأحرف (uppercase/lowercase)
+            for filename in os.listdir(folder):
+                name_without_ext, _ = os.path.splitext(filename)
+                if name_without_ext.strip().lower() == clean_mat:
+                    return os.path.join(folder, filename)
+
+    return None
+
+
 # Recherche flexible dans le fichier Excel
 def get_agent_data(matricule):
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -78,7 +114,6 @@ def get_agent_data(matricule):
                     if fonction_val.lower() == "nan":
                         fonction_val = ""
 
-                    # Recherche dynamique de la colonne Ligne / Site
                     ligne_site_val = ""
                     for col in df.columns:
                         if "ligne" in col.lower() or "site" in col.lower():
@@ -87,7 +122,6 @@ def get_agent_data(matricule):
                                 ligne_site_val = str(val).strip()
                                 break
 
-                    # Recherche dynamique de la colonne Engin
                     engin_val = ""
                     for col in df.columns:
                         if "engin" in col.lower() or "materiel" in col.lower():
@@ -105,10 +139,14 @@ def get_agent_data(matricule):
                             data.get("Date d'autorisation")
                         ),
                         "Examen_Medical": fmt_date(
-                            data.get("Dernière  VM", data.get("Dernière VM", ""))
+                            data.get(
+                                "Dernière  VM", data.get("Dernière VM", "")
+                            )
                         ),
                         "Examen_Psychotechnique": fmt_date(
-                            data.get("Dernier Psy", data.get("Dernière Psy", ""))
+                            data.get(
+                                "Dernier Psy", data.get("Dernière Psy", "")
+                            )
                         ),
                         "Examen_Professionnel": fmt_date(
                             data.get(
@@ -134,7 +172,6 @@ options_modeles = [
 selected_modele = st.selectbox("Choisissez le modèle de carte :", options_modeles)
 modele_default_fonction = selected_modele.split("(")[-1].replace(")", "").strip()
 
-# التعيين التلقائي الافتراضي للعتاد والخطوط بحسب النموذج
 if "CRMV" in selected_modele:
     default_engins = "E1450, E1400, Z2M, DH400, DM600"
     default_site = "Site Voyageurs Kénitra"
@@ -176,8 +213,6 @@ if matricule_search != st.session_state["last_matricule"]:
         st.session_state["dt_psy"] = agent_found["Examen_Psychotechnique"]
         st.session_state["dt_prof"] = agent_found["Examen_Professionnel"]
 
-        # بالنسبة لـ CFT و CRMV تبقى دائماً Site Voyageurs Kénitra
-        # أما CTR و CL فيتم قراءتها من السجل (الجدول)
         if "CFT" in selected_modele or "CRMV" in selected_modele:
             st.session_state["lignes"] = "Site Voyageurs Kénitra"
         else:
@@ -195,7 +230,6 @@ if matricule_search != st.session_state["last_matricule"]:
         st.session_state["engins"] = default_engins
         st.session_state["lignes"] = default_site
 
-# Valeurs par défaut
 st.session_state.setdefault("nom", "")
 st.session_state.setdefault("prenom", "")
 st.session_state.setdefault("matricule", matricule_search or "")
@@ -207,11 +241,26 @@ st.session_state.setdefault("dt_prof", "")
 st.session_state.setdefault("lignes", default_site)
 st.session_state.setdefault("engins", default_engins)
 
+# إظهار الصورة تلقائياً من photo A أو photo B
+auto_photo_path = get_agent_photo(st.session_state["matricule"])
+
 uploaded_photo = st.file_uploader(
     "Photo d'identité (JPG / PNG)", type=["jpg", "jpeg", "png"]
 )
+
+final_photo_source = None
+
 if uploaded_photo is not None:
-    st.image(uploaded_photo, caption="Aperçu de la photo", width=120)
+    final_photo_source = uploaded_photo
+    st.image(uploaded_photo, caption="Photo importée manuellement", width=120)
+elif auto_photo_path:
+    final_photo_source = auto_photo_path
+    folder_used = os.path.basename(os.path.dirname(auto_photo_path))
+    st.image(
+        auto_photo_path,
+        caption=f"Photo trouvée dans [{folder_used}]",
+        width=120,
+    )
 
 st.markdown("---")
 st.subheader("Informations de l'Agent")
@@ -269,9 +318,13 @@ def generate_custom_excel():
     sheet["L4"] = materiel_locos
     sheet["Q4"] = lignes_sites
 
-    if uploaded_photo is not None:
-        img_bytes = uploaded_photo.read()
-        pil_img = PILImage.open(io.BytesIO(img_bytes))
+    if final_photo_source is not None:
+        if isinstance(final_photo_source, str):
+            pil_img = PILImage.open(final_photo_source)
+        else:
+            img_bytes = final_photo_source.read()
+            pil_img = PILImage.open(io.BytesIO(img_bytes))
+
         pil_img = pil_img.resize((100, 120))
 
         img_temp_path = os.path.join(base_dir, "_temp_photo.png")
