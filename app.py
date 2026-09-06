@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ================= ================= =================
-# CSS PROPRE (TITRE ET SOUS-TITRE SUR LA MÊME LIGNE)
+# CSS PROPRE
 # ================= ================= =================
 CLEAN_CSS = """
 <style>
@@ -32,14 +32,13 @@ CLEAN_CSS = """
         background-color: #F4F7F9;
     }
 
-    /* Top Executive Header */
     .exec-header {
         background: linear-gradient(135deg, #0B1E36 0%, #16325B 100%);
         border-bottom: 4px solid #FF6B00;
-        padding: 24px 32px;
+        padding: 20px 25px;
         border-radius: 12px;
         box-shadow: 0 10px 20px rgba(11, 30, 54, 0.15);
-        margin-bottom: 30px;
+        margin-bottom: 25px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -49,12 +48,11 @@ CLEAN_CSS = """
         display: flex;
         align-items: baseline;
         gap: 15px;
-        padding-left: 10px;
     }
 
     .exec-title-main {
         color: #FFFFFF;
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 800;
         margin: 0;
         display: flex;
@@ -64,7 +62,7 @@ CLEAN_CSS = """
 
     .exec-title-sub {
         color: #FF8533;
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.8px;
@@ -76,7 +74,7 @@ CLEAN_CSS = """
         background: rgba(255, 107, 0, 0.2);
         color: #FF8533;
         border: 1px solid rgba(255, 107, 0, 0.4);
-        padding: 6px 16px;
+        padding: 6px 14px;
         border-radius: 30px;
         font-size: 12px;
         font-weight: 700;
@@ -84,7 +82,6 @@ CLEAN_CSS = """
         white-space: nowrap;
     }
 
-    /* Form Fields Customization */
     .stTextInput input, .stSelectbox select {
         border-radius: 6px !important;
         border: 1px solid #CBD5E1 !important;
@@ -92,19 +89,13 @@ CLEAN_CSS = """
         background-color: #FFFFFF !important;
     }
 
-    .stTextInput input:focus {
-        border-color: #0B1E36 !important;
-        box-shadow: 0 0 0 2px rgba(11, 30, 54, 0.2) !important;
-    }
-
-    /* Standard Button Customization */
     .stButton>button {
         background: #0B1E36 !important;
         color: #FFFFFF !important;
         border-radius: 8px !important;
         border: none !important;
         font-weight: 700 !important;
-        padding: 10px 20px !important;
+        padding: 8px 16px !important;
         transition: all 0.2s !important;
     }
 
@@ -113,8 +104,6 @@ CLEAN_CSS = """
         transform: translateY(-2px) !important;
     }
 
-    /* Hide default Streamlit elements */
-    #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 </style>
@@ -125,9 +114,6 @@ st.markdown(CLEAN_CSS, unsafe_allow_html=True)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "users_db.json")
 
-# ================= ================= =================
-# 1. BASE DE DONNEES UTILISATEURS
-# ================= ================= =================
 def load_users():
     if not os.path.exists(USERS_FILE):
         default_users = {
@@ -137,7 +123,8 @@ def load_users():
                 "nom": "Administrateur ONCF"
             }
         }
-        save_users(default_users)
+        with open(USERS_FILE, "w", encoding="utf-8") as f:
+            json.dump(default_users, f, ensure_ascii=False, indent=4)
         return default_users
     try:
         with open(USERS_FILE, "r", encoding="utf-8") as f:
@@ -154,7 +141,7 @@ st.session_state.setdefault("current_user", None)
 st.session_state.setdefault("user_role", None)
 
 # ================= ================= =================
-# 2. MODULE DE CONNEXION (LOGIN)
+# MODULE DE CONNEXION (LOGIN)
 # ================= ================= =================
 if not st.session_state["logged_in"]:
     st.markdown("<br><br>", unsafe_allow_html=True)
@@ -188,39 +175,60 @@ if not st.session_state["logged_in"]:
     st.stop()
 
 # ================= ================= =================
-# 3. HEADER EXECUTIVE ONCF & MENU
+# HEADER EXECUTIVE AVEC BOUTON SAHM (TOGGLE SIDEBAR)
 # ================= ================= =================
 
-st.markdown(f"""
-    <div class="exec-header">
-        <div class="exec-title-wrapper">
-            <div class="exec-title-main">🚄⚡ Office National des Chemins de Fer</div>
-            <div class="exec-title-sub">System management securite CCF.TC.Kenitra</div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div class="exec-badge">{st.session_state['user_role']}</div>
-            <div style="color: white; font-size: 14px; font-weight: 600;">
-                👤 {st.session_state['current_user']}
+# Initialiser l'état du menu (ouvert par défaut)
+st.session_state.setdefault("sidebar_visible", True)
+
+# Injection JavaScript/CSS rapide pour masquer ou afficher la sidebar dynamiquement selon l'état `sidebar_visible`
+if not st.session_state["sidebar_visible"]:
+    st.markdown("""
+        <style>
+            [data-testid="stSidebar"] {
+                display: none !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+hc1, hc2, hc3 = st.columns([0.6, 6, 2])
+
+with hc1:
+    # Bouton avec Sahm Bach nkhbiw wla nrdw lmenu
+    btn_label = "◀️ Masquer" if st.session_state["sidebar_visible"] else "▶️ Afficher"
+    if st.button(btn_label, use_container_width=True):
+        st.session_state["sidebar_visible"] = not st.session_state["sidebar_visible"]
+        st.rerun()
+
+with hc2:
+    st.markdown(f"""
+        <div class="exec-header" style="margin-bottom:0px; padding: 12px 20px;">
+            <div class="exec-title-wrapper">
+                <div class="exec-title-main" style="font-size: 16px;">🚄⚡ ONCF Sécurité</div>
+                <div class="exec-title-sub">Kénitra</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="exec-badge">{st.session_state['user_role']}</div>
+                <div style="color: white; font-size: 12px; font-weight: 600;">👤 {st.session_state['current_user']}</div>
             </div>
         </div>
-    </div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# Sidebar Menu
+with hc3:
+    if st.button("🚪 Déconnexion", use_container_width=True):
+        st.session_state["logged_in"] = False
+        st.session_state["current_user"] = None
+        st.session_state["user_role"] = None
+        st.rerun()
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# Sidebar Menu (Kayban wla kaytkhba 3la 7sab dak Sahm li lfoq)
 st.sidebar.markdown("### 🏛️ Navigation")
 if st.session_state["user_role"] == "Admin":
     menu = st.sidebar.radio("Module actif :", ["🪪 Cartes d'Habilitation", "👥 Gestion des Accès"])
 else:
     menu = "🪪 Cartes d'Habilitation"
-
-st.sidebar.markdown("---")
-st.sidebar.markdown("### ⚙️ Session")
-
-if st.sidebar.button("🚪 Déconnexion", use_container_width=True):
-    st.session_state["logged_in"] = False
-    st.session_state["current_user"] = None
-    st.session_state["user_role"] = None
-    st.rerun()
 
 # ================= ================= =================
 # 4. GESTION DES ACCES (ADMIN)
@@ -263,7 +271,6 @@ def get_agent_photo(matricule):
         return None, "Matricule vide"
     target = str(matricule).strip().lower()
     
-    # إضافة الدوسيات كاملة باش يقلب فيها (A, B, C)
     folders = ["photo A", "photo B", "photo C", "photoA", "photoB", "photoC", "photo_c"]
     
     for folder in folders:
@@ -344,7 +351,6 @@ def determine_template_and_defaults(fonction):
         return "CL.xlsx", "E1450, E1400, Z2M", ""
     else:
         return "CTR.xlsx", "E1450, E1400, E1250, Z2M, DH400", ""
-
 
 # SECTION: RECHERCHE
 st.markdown("### 🔍 Recherche & Identification de l'Agent")
@@ -450,7 +456,6 @@ def generate_custom_excel():
     output.seek(0)
     return output
 
-# Download Action
 if st.button("⚡ Générer la Carte d'Habilitation", use_container_width=True):
     excel_file = generate_custom_excel()
     clean_nom = nom_input.strip().upper() if nom_input.strip() else "AGENT"
