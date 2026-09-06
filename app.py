@@ -5,12 +5,11 @@ import streamlit as st
 # ================= CONFIGURATION & STYLES =================
 st.set_page_config(
     page_title="Portail ONCF - Gestion & Accès",
-    page_icon="🚆",
+    page_icon="🚄",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for ONCF Theme
 st.markdown("""
     <style>
     .main { background-color: #f8f9fa; }
@@ -25,7 +24,6 @@ st.markdown("""
         background-color: #002244;
         color: #ffffff;
     }
-    .css-18e3th9 { padding-top: 1rem; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -39,7 +37,6 @@ def load_users():
                 return json.load(f)
         except Exception:
             pass
-    # Default initial database
     default_users = {
         "ADMIN": {
             "password": "adminpassword123",
@@ -59,15 +56,13 @@ def save_users(users_dict):
     with open(USERS_FILE, "w", encoding="utf-8") as f:
         json.dump(users_dict, f, indent=4, ensure_ascii=False)
 
-# Initialisation de la session state
 if "users" not in st.session_state:
     st.session_state.users = load_users()
 
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-    st.session_state.current_user = None
-    st.session_state.user_role = None
-    st.session_state.user_name = None
+st.session_state.setdefault("logged_in", False)
+st.session_state.setdefault("current_user", None)
+st.session_state.setdefault("user_role", None)
+st.session_state.setdefault("user_name", "")
 
 # ================= AUTHENTIFICATION PAGE =================
 def login_page():
@@ -79,7 +74,7 @@ def login_page():
         st.markdown("<p style='text-align: center; color: gray;'>Veuillez vous connecter avec vos identifiants</p>", unsafe_allow_html=True)
         
         with st.form("login_form"):
-            matricule = st.text_input("Matricule / Identifiant").strip()
+            matricule = st.text_input("Matricule / Identifiant").strip().upper()
             password = st.text_input("Mot de passe", type="password").strip()
             submit = st.form_submit_button("Se Connecter")
             
@@ -88,27 +83,29 @@ def login_page():
                 if matricule in users and users[matricule]["password"] == password:
                     st.session_state.logged_in = True
                     st.session_state.current_user = matricule
-                    st.session_state.user_role = users[matricule]["role"]
-                    st.session_state.user_name = users[matricule]["nom"]
-                    st.success("Connexion réussie !")
+                    st.session_state.user_role = users[matricule].get("role", "Utilisateur")
+                    st.session_state.user_name = users[matricule].get("nom", matricule)
+                    st.success("Connexion réussية !")
                     st.rerun()
                 else:
                     st.error("Identifiants incorrects.")
 
 # ================= MAIN APP =================
-if not st.session_state.logged_in:
+if not st.session_state["logged_in"]:
     login_page()
 else:
-    # Sidebar Navigation
+    # Sidebar Navigation - آمنة وبدون أخطاء
     st.sidebar.title("🚆 Menu ONCF")
-    st.sidebar.write(f"Bienvenue, **{st.session_state.user_name}**")
-    st.sidebar.write((f"Rôle : `{st.session_state.user_role}`"))
+    user_display_name = st.session_state.get("user_name") or st.session_state.get("current_user", "Utilisateur")
+    user_display_role = st.session_state.get("user_role", "Utilisateur")
+    
+    st.sidebar.write(f"Bienvenue, **{user_display_name}**")
+    st.sidebar.write(f"Rôle : `{user_display_role}`")
     st.sidebar.markdown("---")
     
     menu_options = ["🏠 Accueil / Tableau de Bord"]
     
-    # Show user management only for Admins
-    if st.session_state.user_role == "Admin":
+    if user_display_role == "Admin":
         menu_options.append("👥 Gestion des Accès")
         
     menu_options.append("🚪 Déconnexion")
@@ -119,7 +116,6 @@ else:
         st.title("📊 Tableau de Bord - Portail ONCF")
         st.info("Bienvenue sur votre plateforme de gestion centralisée.")
         
-        # Example Dashboard Content
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric(label="Statut Système", value="Actif", delta="Stable")
@@ -131,11 +127,11 @@ else:
         st.markdown("---")
         st.subheader("💡 Guide Rapide")
         st.write("- Utilisez le menu à gauche pour naviguer.")
-        if st.session_state.user_role == "Admin":
+        if user_display_role == "Admin":
             st.write("- En tant qu'**Admin**, vous pouvez ajouter de nouveaux utilisateurs ou modifier leurs rôles depuis l'onglet **Gestion des Accès**.")
 
     elif choice == "👥 Gestion des Accès":
-        if st.session_state.user_role != "Admin":
+        if user_display_role != "Admin":
             st.error("Accès non autorisé.")
         else:
             st.title("👥 Gestion des Accès et Utilisateurs")
@@ -172,9 +168,9 @@ else:
                 for mat, info in st.session_state.users.items():
                     users_data.append({
                         "Matricule": mat,
-                        "Nom": info["nom"],
-                        "Rôle": info["role"],
-                        "Mot de passe": "••••••••" if mat != "ADMIN" else info["password"]
+                        "Nom": info.get("nom", ""),
+                        "Rôle": info.get("role", "Utilisateur"),
+                        "Mot de passe": "••••••••" if mat != "ADMIN" else info.get("password", "")
                     })
                 st.dataframe(users_data, use_container_width=True)
                 
@@ -192,5 +188,5 @@ else:
         st.session_state.logged_in = False
         st.session_state.current_user = None
         st.session_state.user_role = None
-        st.session_state.user_name = None
+        st.session_state.user_name = ""
         st.rerun()
