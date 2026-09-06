@@ -11,34 +11,34 @@ import streamlit as st
 # CONFIGURATION DE LA PAGE
 # ================= ================= =================
 st.set_page_config(
-    page_title="ONCF — Management de la Sécurité",
+    page_title="ONCF — Management Sécurité",
     page_icon="🚆",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ================= ================= =================
-# DESIGN ENTERPRISE LUXE / ONCF EXECUTIVE CHARTE
+# CSS PROPRE ET CORRIGÉ (SANS BUGS VISUELS)
 # ================= ================= =================
-EXECUTIVE_CSS = """
+CLEAN_CSS = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
     html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        font-family: 'Inter', sans-serif !important;
     }
 
     .stApp {
-        background-color: #F8FAFC;
+        background-color: #F4F7F9;
     }
 
-    /* Top Global Executive Bar */
+    /* Top Executive Header */
     .exec-header {
         background: linear-gradient(135deg, #0B1E36 0%, #16325B 100%);
         border-bottom: 4px solid #FF6B00;
-        padding: 20px 35px;
-        border-radius: 16px;
-        box-shadow: 0 12px 30px -10px rgba(11, 30, 54, 0.25);
+        padding: 24px 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 20px rgba(11, 30, 54, 0.15);
         margin-bottom: 30px;
         display: flex;
         align-items: center;
@@ -47,9 +47,8 @@ EXECUTIVE_CSS = """
 
     .exec-title-main {
         color: #FFFFFF;
-        font-size: 24px;
+        font-size: 26px;
         font-weight: 800;
-        letter-spacing: -0.5px;
         margin: 0;
         display: flex;
         align-items: center;
@@ -59,108 +58,60 @@ EXECUTIVE_CSS = """
     .exec-title-sub {
         color: #94A3B8;
         font-size: 13px;
-        font-weight: 500;
-        margin-top: 4px;
+        font-weight: 600;
+        margin-top: 5px;
         text-transform: uppercase;
-        letter-spacing: 0.8px;
+        letter-spacing: 1px;
     }
 
     .exec-badge {
-        background: rgba(255, 107, 0, 0.15);
+        background: rgba(255, 107, 0, 0.2);
         color: #FF8533;
-        border: 1px solid rgba(255, 107, 0, 0.3);
+        border: 1px solid rgba(255, 107, 0, 0.4);
         padding: 6px 16px;
         border-radius: 30px;
         font-size: 12px;
         font-weight: 700;
-        letter-spacing: 0.5px;
         text-transform: uppercase;
     }
 
-    /* Cards Structure */
-    .exec-card {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 16px;
-        padding: 28px;
-        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
-        margin-bottom: 24px;
-        transition: all 0.3s ease;
-    }
-
-    .exec-card-header {
-        font-size: 16px;
-        font-weight: 700;
-        color: #0B1E36;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        border-bottom: 2px solid #F1F5F9;
-        padding-bottom: 12px;
-    }
-
-    /* Login Window */
-    .login-wrapper {
-        background: #FFFFFF;
-        border-radius: 20px;
-        border-top: 6px solid #FF6B00;
-        box-shadow: 0 25px 50px -12px rgba(11, 30, 54, 0.15);
-        padding: 40px;
-        margin-top: 40px;
-    }
-
-    /* Premium Buttons */
-    .stButton>button {
-        background: #0B1E36 !important;
-        color: #FFFFFF !important;
-        border-radius: 10px !important;
-        border: none !important;
-        font-weight: 700 !important;
-        padding: 12px 24px !important;
-        font-size: 14px !important;
-        box-shadow: 0 4px 14px rgba(11, 30, 54, 0.15) !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    }
-
-    .stButton>button:hover {
-        background: #FF6B00 !important;
-        color: #FFFFFF !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 20px rgba(255, 107, 0, 0.3) !important;
-    }
-
-    /* Input Fields */
+    /* Form Fields Customization */
     .stTextInput input, .stSelectbox select {
-        border-radius: 8px !important;
+        border-radius: 6px !important;
         border: 1px solid #CBD5E1 !important;
         padding: 10px 14px !important;
-        background-color: #FAFAFA !important;
-        color: #0F172A !important;
-        font-weight: 500 !important;
+        background-color: #FFFFFF !important;
     }
 
     .stTextInput input:focus {
         border-color: #0B1E36 !important;
-        background-color: #FFFFFF !important;
-        box-shadow: 0 0 0 3px rgba(11, 30, 54, 0.1) !important;
+        box-shadow: 0 0 0 2px rgba(11, 30, 54, 0.2) !important;
     }
 
-    /* Dataframe Table styling */
-    .stDataFrame {
-        border-radius: 12px !important;
-        overflow: hidden !important;
-        border: 1px solid #E2E8F0 !important;
+    /* Button Customization */
+    .stButton>button {
+        background: #0B1E36 !important;
+        color: #FFFFFF !important;
+        border-radius: 8px !important;
+        border: none !important;
+        font-weight: 700 !important;
+        padding: 10px 20px !important;
+        transition: all 0.2s !important;
     }
 
-    /* Clean Streamlit elements */
+    .stButton>button:hover {
+        background: #FF6B00 !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* Hide default Streamlit elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 </style>
 """
 
-st.markdown(EXECUTIVE_CSS, unsafe_allow_html=True)
+st.markdown(CLEAN_CSS, unsafe_allow_html=True)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "users_db.json")
@@ -194,28 +145,27 @@ st.session_state.setdefault("current_user", None)
 st.session_state.setdefault("user_role", None)
 
 # ================= ================= =================
-# 2. MODULE DE CONNEXION (LOGIN EXECUTIVE)
+# 2. MODULE DE CONNEXION (LOGIN)
 # ================= ================= =================
 if not st.session_state["logged_in"]:
     st.markdown("<br><br>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns([1, 1.3, 1])
+    c1, c2, c3 = st.columns([1, 1.2, 1])
     
     with c2:
         st.markdown("""
-            <div class="login-wrapper">
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <div style="font-size: 52px; margin-bottom: 8px;">🚆</div>
-                    <h2 style="color: #0B1E36; font-weight: 800; margin: 0; font-size: 26px; letter-spacing: -0.5px;">ONCF</h2>
-                    <p style="color: #64748B; font-size: 13px; font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px;">Système Management Sécurité</p>
-                </div>
+            <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border-top: 4px solid #FF6B00;">
+                <div style="font-size: 48px; margin-bottom: 10px;">🚆</div>
+                <h2 style="color: #0B1E36; font-weight: 800; margin: 0; font-size: 24px;">ONCF</h2>
+                <p style="color: #64748B; font-size: 13px; font-weight: 600; text-transform: uppercase;">System management securite CCF.TC.Kenitra</p>
+                <hr style="border: 0; height: 1px; background: #E2E8F0; margin: 20px 0;">
             </div>
         """, unsafe_allow_html=True)
         
         with st.form("login_form"):
-            input_matricule = st.text_input("Matricule / Identifiant", placeholder="Ex: ADMIN").strip().upper()
-            input_password = st.text_input("Mot de passe", type="password", placeholder="••••••••")
+            input_matricule = st.text_input("Matricule / Identifiant").strip().upper()
+            input_password = st.text_input("Mot de passe", type="password")
             st.markdown("<br>", unsafe_allow_html=True)
-            submit_login = st.form_submit_button("Se Connecter 🔒", use_container_width=True)
+            submit_login = st.form_submit_button("Se Connecter", use_container_width=True)
             
             if submit_login:
                 users = load_users()
@@ -223,7 +173,6 @@ if not st.session_state["logged_in"]:
                     st.session_state["logged_in"] = True
                     st.session_state["current_user"] = input_matricule
                     st.session_state["user_role"] = users[input_matricule].get("role", "Utilisateur")
-                    st.success("Authentification réussie.")
                     st.rerun()
                 else:
                     st.error("❌ Identifiants incorrects.")
@@ -237,7 +186,7 @@ st.markdown(f"""
     <div class="exec-header">
         <div>
             <div class="exec-title-main">🚆 Office National des Chemins de Fer</div>
-            <div class="exec-title-sub">Plateforme Centrale — Direction Sécurité & Exploitation</div>
+            <div class="exec-title-sub">System management securite CCF.TC.Kenitra</div>
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">
             <div class="exec-badge">{st.session_state['user_role']}</div>
@@ -266,19 +215,16 @@ if st.sidebar.button("Déconnexion 🚪", use_container_width=True):
 # 4. GESTION DES ACCES (ADMIN)
 # ================= ================= =================
 if menu == "👥 Gestion des Accès":
-    st.markdown("<h3 style='color: #0B1E36;'>👥 Administration des Utilisateurs</h3>", unsafe_allow_html=True)
-    
+    st.markdown("### 👥 Administration des Utilisateurs")
     col_u1, col_u2 = st.columns([1, 1.2])
     
     with col_u1:
-        st.markdown("<div class='exec-card'>", unsafe_allow_html=True)
-        st.markdown("<div class='exec-card-header'>➕ Nouvel Utilisateur</div>", unsafe_allow_html=True)
+        st.markdown("##### ➕ Nouvel Utilisateur")
         users = load_users()
         with st.form("add_user_form"):
             new_mat = st.text_input("Matricule").strip().upper()
             new_pass = st.text_input("Mot de passe", type="password")
             new_role = st.selectbox("Rôle Système", ["Utilisateur", "Admin"])
-            
             if st.form_submit_button("Créer l'utilisateur", use_container_width=True):
                 if not new_mat or not new_pass:
                     st.error("Champs obligatoires non renseignés.")
@@ -289,14 +235,11 @@ if menu == "👥 Gestion des Accès":
                     save_users(users)
                     st.success(f"Compte {new_mat} créé avec succès !")
                     st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
                     
     with col_u2:
-        st.markdown("<div class='exec-card'>", unsafe_allow_html=True)
-        st.markdown("<div class='exec-card-header'>📋 Comptes Enregistrés</div>", unsafe_allow_html=True)
+        st.markdown("##### 📋 Comptes Enregistrés")
         users_list = [{"Matricule": m, "Rôle": d.get("role", "Utilisateur")} for m, d in users.items()]
         st.dataframe(pd.DataFrame(users_list), use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
         
     st.stop()
 
@@ -388,9 +331,9 @@ def determine_template_and_defaults(fonction):
     else:
         return "CTR.xlsx", "E1450, E1400, E1250, Z2M, DH400", ""
 
-# Search Card
-st.markdown("<div class='exec-card'>", unsafe_allow_html=True)
-st.markdown("<div class='exec-card-header'>🔍 Recherche & Identification de l'Agent</div>", unsafe_allow_html=True)
+
+# SECTION: RECHERCHE
+st.markdown("### 🔍 Recherche & Identification de l'Agent")
 
 st.session_state.setdefault("last_matricule", "")
 matricule_search = st.text_input("Saisir le Matricule de l'agent :", placeholder="Exemple: 47607A")
@@ -434,11 +377,10 @@ with col_p1:
     elif matricule_search.strip():
         st.warning("⚠️ Photo non disponible")
 
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("---")
 
-# Form Fields Card
-st.markdown("<div class='exec-card'>", unsafe_allow_html=True)
-st.markdown("<div class='exec-card-header'>📝 Informations d'Habilitation</div>", unsafe_allow_html=True)
+# SECTION: INFORMATIONS
+st.markdown("### 📝 Informations d'Habilitation")
 
 col1, col2 = st.columns(2)
 
@@ -457,7 +399,7 @@ with col2:
 lignes_sites = st.text_input("Lignes / Sites autorisés", key="lignes")
 materiel_locos = st.text_input("Matériel / Locos / Rames", key="engins")
 
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
 def generate_custom_excel():
     tmpl_filename, _, _ = determine_template_and_defaults(fonction_input)
