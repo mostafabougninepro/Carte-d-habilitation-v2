@@ -11,138 +11,162 @@ import streamlit as st
 # CONFIGURATION DE LA PAGE
 # ================= ================= =================
 st.set_page_config(
-    page_title="ONCF — Management Sécurité",
+    page_title="ONCF — Management de la Sécurité",
     page_icon="🚆",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ================= ================= =================
-# STYLES CSS SUR-MESURE (DESIGN ONCF PREMIUM)
+# DESIGN ENTERPRISE LUXE / ONCF EXECUTIVE CHARTE
 # ================= ================= =================
-ONCF_CSS = """
+EXECUTIVE_CSS = """
 <style>
-    /* Global Styles */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .stApp {
-        background-color: #F1F5F9;
-    }
-    
-    /* ONCF Top Brand Strip */
-    .oncf-brand-bar {
-        height: 6px;
-        background: linear-gradient(90deg, #E65100 0%, #D81B60 50%, #0F2C59 100%);
-        border-radius: 3px;
-        margin-bottom: 20px;
-    }
-    
-    /* Header Banner */
-    .oncf-header-card {
-        background: #FFFFFF;
-        padding: 24px 32px;
-        border-radius: 16px;
-        border-left: 8px solid #E65100;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-        margin-bottom: 25px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .oncf-main-title {
-        font-size: 26px;
-        font-weight: 800;
-        color: #0F2C59;
-        margin: 0;
-        letter-spacing: -0.5px;
-    }
-    
-    .oncf-subtitle {
-        color: #64748B;
-        font-size: 14px;
-        margin-top: 4px;
-        font-weight: 500;
-    }
-    
-    /* Login Box */
-    .login-container {
-        background: #FFFFFF;
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 20px 30px -10px rgba(15, 44, 89, 0.1);
-        border: 1px solid #E2E8F0;
-    }
-    
-    /* Section Cards */
-    .content-card {
-        background: #FFFFFF;
-        padding: 24px;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        border: 1px solid #E2E8F0;
-        margin-bottom: 20px;
-    }
-    
-    .section-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: #0F2C59;
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        border-bottom: 2px solid #F1F5F9;
-        padding-bottom: 8px;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
     }
 
-    /* Buttons Styling */
+    .stApp {
+        background-color: #F8FAFC;
+    }
+
+    /* Top Global Executive Bar */
+    .exec-header {
+        background: linear-gradient(135deg, #0B1E36 0%, #16325B 100%);
+        border-bottom: 4px solid #FF6B00;
+        padding: 20px 35px;
+        border-radius: 16px;
+        box-shadow: 0 12px 30px -10px rgba(11, 30, 54, 0.25);
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .exec-title-main {
+        color: #FFFFFF;
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .exec-title-sub {
+        color: #94A3B8;
+        font-size: 13px;
+        font-weight: 500;
+        margin-top: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    .exec-badge {
+        background: rgba(255, 107, 0, 0.15);
+        color: #FF8533;
+        border: 1px solid rgba(255, 107, 0, 0.3);
+        padding: 6px 16px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    /* Cards Structure */
+    .exec-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+
+    .exec-card-header {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0B1E36;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 2px solid #F1F5F9;
+        padding-bottom: 12px;
+    }
+
+    /* Login Window */
+    .login-wrapper {
+        background: #FFFFFF;
+        border-radius: 20px;
+        border-top: 6px solid #FF6B00;
+        box-shadow: 0 25px 50px -12px rgba(11, 30, 54, 0.15);
+        padding: 40px;
+        margin-top: 40px;
+    }
+
+    /* Premium Buttons */
     .stButton>button {
-        background: linear-gradient(135deg, #0F2C59 0%, #1E3A8A 100%) !important;
-        color: white !important;
+        background: #0B1E36 !important;
+        color: #FFFFFF !important;
         border-radius: 10px !important;
         border: none !important;
         font-weight: 700 !important;
         padding: 12px 24px !important;
-        font-size: 15px !important;
-        box-shadow: 0 4px 12px rgba(15, 44, 89, 0.2) !important;
-        transition: all 0.25s ease !important;
-    }
-    
-    .stButton>button:hover {
-        background: linear-gradient(135deg, #E65100 0%, #D81B60 100%) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 18px rgba(230, 81, 0, 0.35) !important;
+        font-size: 14px !important;
+        box-shadow: 0 4px 14px rgba(11, 30, 54, 0.15) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
-    /* Form Fields */
-    .stTextInput input {
+    .stButton>button:hover {
+        background: #FF6B00 !important;
+        color: #FFFFFF !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 20px rgba(255, 107, 0, 0.3) !important;
+    }
+
+    /* Input Fields */
+    .stTextInput input, .stSelectbox select {
         border-radius: 8px !important;
         border: 1px solid #CBD5E1 !important;
         padding: 10px 14px !important;
-    }
-    .stTextInput input:focus {
-        border-color: #E65100 !important;
-        box-shadow: 0 0 0 3px rgba(230, 81, 0, 0.15) !important;
+        background-color: #FAFAFA !important;
+        color: #0F172A !important;
+        font-weight: 500 !important;
     }
 
-    /* Hide Streamlit UI elements */
+    .stTextInput input:focus {
+        border-color: #0B1E36 !important;
+        background-color: #FFFFFF !important;
+        box-shadow: 0 0 0 3px rgba(11, 30, 54, 0.1) !important;
+    }
+
+    /* Dataframe Table styling */
+    .stDataFrame {
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        border: 1px solid #E2E8F0 !important;
+    }
+
+    /* Clean Streamlit elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    header {visibility: hidden;}
 </style>
 """
 
-st.markdown(ONCF_CSS, unsafe_allow_html=True)
+st.markdown(EXECUTIVE_CSS, unsafe_allow_html=True)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "users_db.json")
 
 # ================= ================= =================
-# 1. GESTION DES UTILISATEURS
+# 1. BASE DE DONNEES UTILISATEURS
 # ================= ================= =================
 def load_users():
     if not os.path.exists(USERS_FILE):
@@ -170,21 +194,19 @@ st.session_state.setdefault("current_user", None)
 st.session_state.setdefault("user_role", None)
 
 # ================= ================= =================
-# 2. PAGE DE CONNEXION (LOGIN)
+# 2. MODULE DE CONNEXION (LOGIN EXECUTIVE)
 # ================= ================= =================
 if not st.session_state["logged_in"]:
-    st.markdown("<div class='oncf-brand-bar'></div>", unsafe_allow_html=True)
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns([1, 1.3, 1])
     
-    col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
-    
-    with col_l2:
+    with c2:
         st.markdown("""
-            <div class="login-container">
+            <div class="login-wrapper">
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <div style="font-size: 48px; margin-bottom: 10px;">🚆</div>
-                    <h2 style="color: #0F2C59; font-weight: 800; margin: 0; font-size: 24px;">ONCF</h2>
-                    <p style="color: #64748B; font-size: 14px; margin-top: 4px; font-weight: 600;">Système Management Sécurité</p>
+                    <div style="font-size: 52px; margin-bottom: 8px;">🚆</div>
+                    <h2 style="color: #0B1E36; font-weight: 800; margin: 0; font-size: 26px; letter-spacing: -0.5px;">ONCF</h2>
+                    <p style="color: #64748B; font-size: 13px; font-weight: 600; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px;">Système Management Sécurité</p>
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -193,7 +215,7 @@ if not st.session_state["logged_in"]:
             input_matricule = st.text_input("Matricule / Identifiant", placeholder="Ex: ADMIN").strip().upper()
             input_password = st.text_input("Mot de passe", type="password", placeholder="••••••••")
             st.markdown("<br>", unsafe_allow_html=True)
-            submit_login = st.form_submit_button("Se Connecter 🔑", use_container_width=True)
+            submit_login = st.form_submit_button("Se Connecter 🔒", use_container_width=True)
             
             if submit_login:
                 users = load_users()
@@ -201,41 +223,39 @@ if not st.session_state["logged_in"]:
                     st.session_state["logged_in"] = True
                     st.session_state["current_user"] = input_matricule
                     st.session_state["user_role"] = users[input_matricule].get("role", "Utilisateur")
-                    st.success("Connexion réussie !")
+                    st.success("Authentification réussie.")
                     st.rerun()
                 else:
-                    st.error("❌ Matricule ou mot de passe incorrect.")
-    
+                    st.error("❌ Identifiants incorrects.")
     st.stop()
 
 # ================= ================= =================
-# 3. HEADER & NAVIGATION
+# 3. HEADER EXECUTIVE ONCF & MENU
 # ================= ================= =================
 
-st.markdown("<div class='oncf-brand-bar'></div>", unsafe_allow_html=True)
-
-# Top Banner
 st.markdown(f"""
-    <div class="oncf-header-card">
+    <div class="exec-header">
         <div>
-            <h1 class="oncf-main-title">🚆 Office National des Chemins de Fer</h1>
-            <div class="oncf-subtitle">Système Management Sécurité — Direction Sécurité & Exploitation</div>
+            <div class="exec-title-main">🚆 Office National des Chemins de Fer</div>
+            <div class="exec-title-sub">Plateforme Centrale — Direction Sécurité & Exploitation</div>
         </div>
-        <div style="text-align: right;">
-            <span style="background-color: #0F2C59; color: white; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 13px;">
-                👤 {st.session_state['current_user']} ({st.session_state['user_role']})
-            </span>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="exec-badge">{st.session_state['user_role']}</div>
+            <div style="color: white; font-size: 14px; font-weight: 600;">
+                👤 {st.session_state['current_user']}
+            </div>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
 # Sidebar Menu
-st.sidebar.markdown("### 📌 Navigation")
+st.sidebar.markdown("### 🏛️ Navigation")
 if st.session_state["user_role"] == "Admin":
-    menu = st.sidebar.radio("Sélecteur de module :", ["🪪 Cartes d'Habilitation", "👥 Gestion des Utilisateurs"])
+    menu = st.sidebar.radio("Module actif :", ["🪪 Cartes d'Habilitation", "👥 Gestion des Accès"])
 else:
     menu = "🪪 Cartes d'Habilitation"
 
+st.sidebar.markdown("---")
 if st.sidebar.button("Déconnexion 🚪", use_container_width=True):
     st.session_state["logged_in"] = False
     st.session_state["current_user"] = None
@@ -243,37 +263,37 @@ if st.sidebar.button("Déconnexion 🚪", use_container_width=True):
     st.rerun()
 
 # ================= ================= =================
-# 4. GESTION DES UTILISATEURS (ADMIN)
+# 4. GESTION DES ACCES (ADMIN)
 # ================= ================= =================
-if menu == "👥 Gestion des Utilisateurs":
-    st.markdown("### 👥 Administration des Comptes")
+if menu == "👥 Gestion des Accès":
+    st.markdown("<h3 style='color: #0B1E36;'>👥 Administration des Utilisateurs</h3>", unsafe_allow_html=True)
     
-    col_u1, col_u2 = st.columns([1, 1])
+    col_u1, col_u2 = st.columns([1, 1.2])
     
     with col_u1:
-        st.markdown("<div class='content-card'>", unsafe_allow_html=True)
-        st.markdown("<div class='section-title'>➕ Ajouter un Utilisateur</div>", unsafe_allow_html=True)
+        st.markdown("<div class='exec-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='exec-card-header'>➕ Nouvel Utilisateur</div>", unsafe_allow_html=True)
         users = load_users()
         with st.form("add_user_form"):
-            new_mat = st.text_input("Matricule / Identifiant").strip().upper()
+            new_mat = st.text_input("Matricule").strip().upper()
             new_pass = st.text_input("Mot de passe", type="password")
-            new_role = st.selectbox("Rôle", ["Utilisateur", "Admin"])
+            new_role = st.selectbox("Rôle Système", ["Utilisateur", "Admin"])
             
-            if st.form_submit_button("Créer le compte", use_container_width=True):
+            if st.form_submit_button("Créer l'utilisateur", use_container_width=True):
                 if not new_mat or not new_pass:
-                    st.error("Veuillez remplir tous les champs.")
+                    st.error("Champs obligatoires non renseignés.")
                 elif new_mat in users:
-                    st.warning("Cet utilisateur existe déjà.")
+                    st.warning("Utilisateur déjà existant.")
                 else:
                     users[new_mat] = {"password": new_pass, "role": new_role}
                     save_users(users)
-                    st.success(f"Utilisateur {new_mat} créé avec succès !")
+                    st.success(f"Compte {new_mat} créé avec succès !")
                     st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
                     
     with col_u2:
-        st.markdown("<div class='content-card'>", unsafe_allow_html=True)
-        st.markdown("<div class='section-title'>📋 Liste des Utilisateurs</div>", unsafe_allow_html=True)
+        st.markdown("<div class='exec-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='exec-card-header'>📋 Comptes Enregistrés</div>", unsafe_allow_html=True)
         users_list = [{"Matricule": m, "Rôle": d.get("role", "Utilisateur")} for m, d in users.items()]
         st.dataframe(pd.DataFrame(users_list), use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -281,8 +301,9 @@ if menu == "👥 Gestion des Utilisateurs":
     st.stop()
 
 # ================= ================= =================
-# 5. GENERATEUR DE CARTES
+# 5. GENERATEUR DE CARTES D'HABILITATION
 # ================= ================= =================
+
 def get_agent_photo(matricule):
     if not matricule or not str(matricule).strip():
         return None, "Matricule vide"
@@ -367,12 +388,12 @@ def determine_template_and_defaults(fonction):
     else:
         return "CTR.xlsx", "E1450, E1400, E1250, Z2M, DH400", ""
 
-# Search Box Container
-st.markdown("<div class='content-card'>", unsafe_allow_html=True)
-st.markdown("<div class='section-title'>🔍 Recherche & Identification de l'Agent</div>", unsafe_allow_html=True)
+# Search Card
+st.markdown("<div class='exec-card'>", unsafe_allow_html=True)
+st.markdown("<div class='exec-card-header'>🔍 Recherche & Identification de l'Agent</div>", unsafe_allow_html=True)
 
 st.session_state.setdefault("last_matricule", "")
-matricule_search = st.text_input("Saisir le Matricule de l'agent :", placeholder="Ex: 47607A")
+matricule_search = st.text_input("Saisir le Matricule de l'agent :", placeholder="Exemple: 47607A")
 
 if matricule_search != st.session_state["last_matricule"]:
     st.session_state["last_matricule"] = matricule_search
@@ -406,18 +427,18 @@ with col_p1:
     uploaded_photo = st.file_uploader("Photo d'identité (Optionnel)", type=["jpg", "jpeg", "png"])
     if uploaded_photo is not None:
         final_photo_source = uploaded_photo
-        st.image(uploaded_photo, caption="Photo chargée", width=120)
+        st.image(uploaded_photo, caption="Photo importée", width=115)
     elif found_photo_path:
         final_photo_source = found_photo_path
-        st.image(found_photo_path, caption="✅ Photo automatique", width=120)
+        st.image(found_photo_path, caption="✅ Photo récupérée", width=115)
     elif matricule_search.strip():
-        st.warning("⚠️ Photo non trouvée")
+        st.warning("⚠️ Photo non disponible")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Agent Info Form Card
-st.markdown("<div class='content-card'>", unsafe_allow_html=True)
-st.markdown("<div class='section-title'>📝 Informations sur la Carte</div>", unsafe_allow_html=True)
+# Form Fields Card
+st.markdown("<div class='exec-card'>", unsafe_allow_html=True)
+st.markdown("<div class='exec-card-header'>📝 Informations d'Habilitation</div>", unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
 
@@ -473,15 +494,13 @@ def generate_custom_excel():
     output.seek(0)
     return output
 
-# Generate & Download Section
+# Download Action
 if st.button("⚡ Générer la Carte d'Habilitation", use_container_width=True):
     excel_file = generate_custom_excel()
     clean_nom = nom_input.strip().upper() if nom_input.strip() else "AGENT"
-    
-    # تسمية الملف باسم Carte_NOM.xlsx
     file_download_name = f"Carte_{clean_nom}.xlsx"
 
-    st.success(f"✅ Carte de {clean_nom} générée avec succès !")
+    st.success(f"✅ Document d'habilitation prêt : {file_download_name}")
     st.download_button(
         label=f"📥 Télécharger {file_download_name}",
         data=excel_file,
