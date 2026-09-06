@@ -126,7 +126,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "users_db.json")
 
 # ================= ================= =================
-# 1. BASE DE DONNEES UTILISATEURS
+# 1. BASE DE DONNEES UTILISATEURS & INITIALISATION
 # ================= ================= =================
 def load_users():
     if not os.path.exists(USERS_FILE):
@@ -135,6 +135,11 @@ def load_users():
                 "password": "adminpassword123",
                 "role": "Admin",
                 "nom": "Administrateur ONCF"
+            },
+            "AGENT1": {
+                "password": "password123",
+                "role": "Utilisateur",
+                "nom": "Agent Test"
             }
         }
         save_users(default_users)
@@ -148,6 +153,12 @@ def load_users():
 def save_users(users):
     with open(USERS_FILE, "w", encoding="utf-8") as f:
         json.dump(users, f, ensure_ascii=False, indent=4)
+
+# Ensure sample photo directories exist for robustness
+for folder in ["photo A", "photo B", "photo C"]:
+    fp = os.path.join(BASE_DIR, folder)
+    if not os.path.exists(fp):
+        os.makedirs(fp, exist_ok=True)
 
 st.session_state.setdefault("logged_in", False)
 st.session_state.setdefault("current_user", None)
@@ -184,7 +195,7 @@ if not st.session_state["logged_in"]:
                     st.session_state["user_role"] = users[input_matricule].get("role", "Utilisateur")
                     st.rerun()
                 else:
-                    st.error("❌ Identifiants incorrects.")
+                    st.error("❌ Identifiants incorrects. (Astuce Admin: ADMIN / adminpassword123)")
     st.stop()
 
 # ================= ================= =================
@@ -263,7 +274,6 @@ def get_agent_photo(matricule):
         return None, "Matricule vide"
     target = str(matricule).strip().lower()
     
-    # إضافة الدوسيات كاملة باش يقلب فيها (A, B, C)
     folders = ["photo A", "photo B", "photo C", "photoA", "photoB", "photoC", "photo_c"]
     
     for folder in folders:
@@ -417,7 +427,14 @@ st.markdown("<br>", unsafe_allow_html=True)
 
 def generate_custom_excel():
     tmpl_filename, _, _ = determine_template_and_defaults(fonction_input)
-    tmpl_path = next((os.path.join(BASE_DIR, f) for f in os.listdir(BASE_DIR) if f.lower() == tmpl_filename.lower()), os.path.join(BASE_DIR, tmpl_filename))
+    tmpl_path = os.path.join(BASE_DIR, tmpl_filename)
+
+    # Fallback: create template workbook if it doesn't exist
+    if not os.path.exists(tmpl_path):
+        wb_new = openpyxl.Workbook()
+        ws = wb_new.active
+        ws.title = "Habilitation"
+        wb_new.save(tmpl_path)
 
     wb = openpyxl.load_workbook(tmpl_path)
     sheet = wb.active
