@@ -19,7 +19,6 @@ st.title("🎴 Générateur de Cartes d'Habilitation")
 def get_agent_data(matricule):
     base_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # Détection automatique du fichier Excel
     excel_filename = None
     for f in os.listdir(base_dir):
         if f.lower().endswith(".xlsx") and "registre" in f.lower():
@@ -131,6 +130,20 @@ options_modeles = [
 selected_modele = st.selectbox("Choisissez le modèle de carte :", options_modeles)
 modele_default_fonction = selected_modele.split("(")[-1].replace(")", "").strip()
 
+# التعيين التلقائي للعتاد والخطوط بحسب النموذج المختارات
+if "CTR" in selected_modele:
+    default_engins = "E1450, E1400, E1250, Z2M, DH400"
+    default_site = ""
+elif "CFT" in selected_modele:
+    default_engins = "E1450, E1400, E1250, Z2M, DH400, DM600"
+    default_site = "Site Voyageurs Kénitra"
+elif "CRMV" in selected_modele:
+    default_engins = "E1450, E1400, Z2M"
+    default_site = "Site Voyageurs Kénitra"
+else:
+    default_engins = "E1450, E1400, Z2M"
+    default_site = ""
+
 if "last_matricule" not in st.session_state:
     st.session_state["last_matricule"] = ""
 
@@ -158,13 +171,15 @@ if matricule_search != st.session_state["last_matricule"]:
         st.session_state["lignes"] = (
             agent_found["Ligne_Site"]
             if agent_found["Ligne_Site"]
-            else "Site Voyageurs Kénitra"
+            else default_site
         )
         st.session_state["engins"] = (
-            agent_found["Engin"] if agent_found["Engin"] else "E1450, E1400, Z2M"
+            agent_found["Engin"] if agent_found["Engin"] else default_engins
         )
     else:
         st.session_state["fonction"] = modele_default_fonction
+        st.session_state["engins"] = default_engins
+        st.session_state["lignes"] = default_site
 
 # Valeurs par défaut
 st.session_state.setdefault("nom", "")
@@ -175,8 +190,8 @@ st.session_state.setdefault("dt_auth", "")
 st.session_state.setdefault("dt_med", "")
 st.session_state.setdefault("dt_psy", "")
 st.session_state.setdefault("dt_prof", "")
-st.session_state.setdefault("lignes", "Site Voyageurs Kénitra")
-st.session_state.setdefault("engins", "E1450, E1400, Z2M")
+st.session_state.setdefault("lignes", default_site)
+st.session_state.setdefault("engins", default_engins)
 
 uploaded_photo = st.file_uploader(
     "Photo d'identité (JPG / PNG)", type=["jpg", "jpeg", "png"]
@@ -261,7 +276,6 @@ st.write("")
 if st.button("⚡ Générer la Carte"):
     excel_file = generate_custom_excel()
 
-    # Extraction sécurisée du nom du modèle et du nom de l'agent
     modele_code = selected_modele.split("(")[0].strip()
     clean_nom = nom_input.strip() if nom_input.strip() else "Agent"
     custom_filename = f"Carte_{modele_code}_{clean_nom}.xlsx"
