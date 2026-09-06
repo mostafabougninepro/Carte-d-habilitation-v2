@@ -188,23 +188,39 @@ if not st.session_state["logged_in"]:
     st.stop()
 
 # ================= ================= =================
-# 3. HEADER EXECUTIVE ONCF & MENU (نفس السطر)
+# 3. HEADER EXECUTIVE ONCF & MENU
 # ================= ================= =================
 
-st.markdown(f"""
-    <div class="exec-header">
-        <div class="exec-title-wrapper">
-            <div class="exec-title-main">🚄⚡ Office National des Chemins de Fer</div>
-            <div class="exec-title-sub">System management securite CCF.TC.Kenitra</div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div class="exec-badge">{st.session_state['user_role']}</div>
-            <div style="color: white; font-size: 14px; font-weight: 600;">
-                👤 {st.session_state['current_user']}
+# Header supérieur avec le bouton de déconnexion à droite
+head_col1, head_col2 = st.run_if_needed if hasattr(st, 'run_if_needed') else st.columns([4, 1]) # تنظيم العرض
+
+# نستعملو نظام الأعمدة باش نحطو المعلومات والديسكونيكسيون الفوق على اليمين
+header_cols = st.columns([3, 1])
+with header_cols[0]:
+    st.markdown(f"""
+        <div class="exec-header" style="margin-bottom: 0px;">
+            <div class="exec-title-wrapper">
+                <div class="exec-title-main">🚄⚡ Office National des Chemins de Fer</div>
+                <div class="exec-title-sub">System management securite CCF.TC.Kenitra</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="exec-badge">{st.session_state['user_role']}</div>
+                <div style="color: white; font-size: 14px; font-weight: 600;">
+                    👤 {st.session_state['current_user']}
+                </div>
             </div>
         </div>
-    </div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+
+with header_cols[1]:
+    st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
+    if st.button("🚪 Déconnexion", use_container_width=True):
+        st.session_state["logged_in"] = False
+        st.session_state["current_user"] = None
+        st.session_state["user_role"] = None
+        st.rerun()
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 # Sidebar Menu
 st.sidebar.markdown("### 🏛️ Navigation")
@@ -212,16 +228,6 @@ if st.session_state["user_role"] == "Admin":
     menu = st.sidebar.radio("Module actif :", ["🪪 Cartes d'Habilitation", "👥 Gestion des Accès"])
 else:
     menu = "🪪 Cartes d'Habilitation"
-
-st.sidebar.markdown("---")
-st.sidebar.markdown("### ⚙️ Session")
-
-# زر Déconnexion واضح ومضمون 100%
-if st.sidebar.button("🚪 Déconnexion", use_container_width=True):
-    st.session_state["logged_in"] = False
-    st.session_state["current_user"] = None
-    st.session_state["user_role"] = None
-    st.rerun()
 
 # ================= ================= =================
 # 4. GESTION DES ACCES (ADMIN)
@@ -263,7 +269,7 @@ def get_agent_photo(matricule):
     if not matricule or not str(matricule).strip():
         return None, "Matricule vide"
     target = str(matricule).strip().lower()
-    folders = ["photo A", "photo B", "photoA", "photoB"]
+    folders = ["photo A", "photo B", "photoA", "photoB", "Photo A", "Photo B"]
     for folder in folders:
         folder_path = os.path.join(BASE_DIR, folder)
         if os.path.exists(folder_path):
