@@ -7,12 +7,13 @@ from PIL import Image as PILImage
 import streamlit as st
 
 st.set_page_config(
-    page_title="Générateur de Cartes d'Habilitation",
-    page_icon="🪪",
+    page_title="Système Management Sécurité",
+    page_icon="🛡️",
     layout="centered",
 )
 
-st.title("🎴 Générateur de Cartes d'Habilitation")
+st.title("🛡️ Système Management Sécurité")
+st.subheader("Générateur de Cartes d'Habilitation")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -36,10 +37,44 @@ def get_agent_photo(matricule):
             except Exception:
                 continue
 
-    return None, "Non trouvée dans les dossiers"
+    return None, "Photo non trouvable"
 
 
-def get_agent_data(matricule):
+def get_official_agent_info(matricule):
+    """قراءة الاسم والكنية والوظيفة من ملف التحديث Mis_A_Jour photos.xlsx"""
+    excel_path = os.path.join(BASE_DIR, "Mis_A_Jour photos.xlsx")
+    if not os.path.exists(excel_path):
+        return None
+
+    try:
+        xl = pd.ExcelFile(excel_path)
+        for sheet_name in xl.sheet_names:
+            df = pd.read_excel(excel_path, sheet_name=sheet_name)
+            
+            # البحث عن الأعمدة المناسبة
+            mle_col = None
+            for col in df.columns:
+                if str(col).strip().lower() in ["mle", "matricule"]:
+                    mle_col = col
+                    break
+            
+            if mle_col:
+                df[mle_col] = df[mle_col].astype(str).str.strip()
+                agent = df[df[mle_col].str.lower() == str(matricule).strip().lower()]
+                
+                if not agent.empty:
+                    row = agent.iloc[0]
+                    nom = str(row.get("Nom", "")).strip() if pd.notnull(row.get("Nom")) else ""
+                    prenom = str(row.get("Prénom", "")).strip() if pd.notnull(row.get("Prénom")) else ""
+                    fonction = str(row.get("Fonction", "")).strip() if pd.notnull(row.get("Fonction")) else ""
+                    return {"Nom": nom, "Prenom": prenom, "Fonction": fonction}
+    except Exception:
+        pass
+    return None
+
+
+def get_agent_dates_and_details(matricule):
+    """قراءة التواريخ والـ Engin والـ Site من الـ Registre"""
     excel_filename = None
     for f in os.listdir(BASE_DIR):
         if f.lower().endswith(".xlsx") and "registre" in f.lower():
@@ -47,57 +82,27 @@ def get_agent_data(matricule):
             break
 
     if not excel_filename:
-        st.error("⚠️ Fichier Excel du registre introuvable !")
-        return None
+        return {}
 
     excel_path = os.path.join(BASE_DIR, excel_filename)
 
     try:
         xl = pd.ExcelFile(excel_path)
-
         for sheet_name in xl.sheet_names:
             df = pd.read_excel(excel_path, sheet_name=sheet_name, header=6)
             df.columns = [str(c).strip() for c in df.columns]
 
             if "Matricule" in df.columns:
                 df["Matricule"] = df["Matricule"].astype(str).str.strip()
-                agent = df[df["Matricule"] == str(matricule).strip()]
+                agent = df[df["Matricule"].str.lower() == str(matricule).strip().lower()]
 
                 if not agent.empty:
                     data = agent.iloc[0]
 
                     def fmt_date(val):
-                        if (
-                            pd.notnull(val)
-                            and str(val) != "NaT"
-                            and str(val).strip() != ""
-                        ):
+                        if pd.notnull(val) and str(val) != "NaT" and str(val).strip() != "":
                             return pd.to_datetime(val).strftime("%Y-%m-%d")
                         return ""
-
-                    nom_val = ""
-                    prenom_val = ""
-
-                    if "Nom" in data and pd.notnull(data["Nom"]):
-                        nom_val = str(data["Nom"]).strip()
-                    if "Prénom" in data and pd.notnull(data["Prénom"]):
-                        prenom_val = str(data["Prénom"]).strip()
-
-                    if not nom_val and not prenom_val:
-                        for col in df.columns:
-                            if "nom" in col.lower():
-                                val = str(data.get(col, "")).strip()
-                                if val and val.lower() != "nan":
-                                    parts = val.split(" ", 1)
-                                    nom_val = parts[0] if len(parts) > 0 else ""
-                                    prenom_val = (
-                                        parts[1] if len(parts) > 1 else ""
-                                    )
-                                    break
-
-                    fonction_val = str(data.get("Fonction", "")).strip()
-                    if fonction_val.lower() == "nan":
-                        fonction_val = ""
 
                     ligne_site_val = ""
                     for col in df.columns:
@@ -116,62 +121,30 @@ def get_agent_data(matricule):
                                 break
 
                     return {
-                        "Matricule": str(data.get("Matricule", "")),
-                        "Nom": nom_val,
-                        "Prenom": prenom_val,
-                        "Fonction": fonction_val,
-                        "Date_Autorisation": fmt_date(
-                            data.get("Date d'autorisation")
-                        ),
-                        "Examen_Medical": fmt_date(
-                            data.get(
-                                "Dernière  VM", data.get("Dernière VM", "")
-                            )
-                        ),
-                        "Examen_Psychotechnique": fmt_date(
-                            data.get(
-                                "Dernier Psy", data.get("Dernière Psy", "")
-                            )
-                        ),
-                        "Examen_Professionnel": fmt_date(
-                            data.get(
-                                "Dernière évaluation",
-                                data.get("Dernier Eval", ""),
-                            )
-                        ),
+                        "Date_Autorisation": fmt_date(data.get("Date d'autorisation")),
+                        "Examen_Medical": fmt_date(data.get("Dernière  VM", data.get("Dernière VM", ""))),
+                        "Examen_Psychotechnique": fmt_date(data.get("Dernier Psy", data.get("Dernière Psy", ""))),
+                        "Examen_Professionnel": fmt_date(data.get("Dernière évaluation", data.get("Dernier Eval", ""))),
                         "Engin": engin_val,
                         "Ligne_Site": ligne_site_val,
                     }
-    except Exception as e:
-        st.error(f"Erreur de lecture du registre : {e}")
-    return None
+    except Exception:
+        pass
+    return {}
 
 
-options_modeles = [
-    "CTR (Chef de Train)",
-    "CL (Conducteur de Ligne)",
-    "CFT (Chef Formation Trains)",
-    "CRMV (Conducteur de Manœuvre)",
-]
+def determine_template_and_defaults(fonction):
+    f_lower = fonction.lower().strip()
+    if "manœuvre" in f_lower or "manoeuvre" in f_lower or "crmv" in f_lower:
+        return "CRMV.xlsx", "E1450, E1400, Z2M, DH400, DM600", "Site Voyageurs Kénitra"
+    elif "formation" in f_lower or "cft" in f_lower:
+        return "CFT.xlsx", "E1450, E1400, E1250, Z2M, DH400, DM600", "Site Voyageurs Kénitra"
+    elif "ligne" in f_lower or "cl" in f_lower:
+        return "CL.xlsx", "E1450, E1400, Z2M", ""
+    else:
+        # Default to CTR (Chef de Trains / Chef de Train)
+        return "CTR.xlsx", "E1450, E1400, E1250, Z2M, DH400", ""
 
-selected_modele = st.selectbox("Choisissez le modèle de carte :", options_modeles)
-modele_default_fonction = selected_modele.split("(")[-1].replace(")", "").strip()
-
-if "CRMV" in selected_modele:
-    default_engins = "E1450, E1400, Z2M, DH400, DM600"
-    default_site = "Site Voyageurs Kénitra"
-elif "CFT" in selected_modele:
-    default_engins = "E1450, E1400, E1250, Z2M, DH400, DM600"
-    default_site = "Site Voyageurs Kénitra"
-elif "CTR" in selected_modele:
-    default_engins = "E1450, E1400, E1250, Z2M, DH400"
-    default_site = ""
-elif "CL" in selected_modele:
-    default_engins = "E1450, E1400, Z2M"
-    default_site = ""
-else:
-    default_engins = ""
-    default_site = ""
 
 if "last_matricule" not in st.session_state:
     st.session_state["last_matricule"] = ""
@@ -180,51 +153,42 @@ matricule_search = st.text_input(
     "🔍 Rechercher par Matricule :", placeholder="Ex: 47607A"
 )
 
-agent_found = get_agent_data(matricule_search) if matricule_search else None
-
 if matricule_search != st.session_state["last_matricule"]:
     st.session_state["last_matricule"] = matricule_search
-    if agent_found:
-        st.session_state["nom"] = agent_found["Nom"]
-        st.session_state["prenom"] = agent_found["Prenom"]
-        st.session_state["matricule"] = agent_found["Matricule"]
-        st.session_state["fonction"] = (
-            agent_found["Fonction"]
-            if agent_found["Fonction"]
-            else modele_default_fonction
-        )
-        st.session_state["dt_auth"] = agent_found["Date_Autorisation"]
-        st.session_state["dt_med"] = agent_found["Examen_Medical"]
-        st.session_state["dt_psy"] = agent_found["Examen_Psychotechnique"]
-        st.session_state["dt_prof"] = agent_found["Examen_Professionnel"]
+    
+    official_info = get_official_agent_info(matricule_search) if matricule_search else None
+    dates_info = get_agent_dates_and_details(matricule_search) if matricule_search else {}
 
-        if "CFT" in selected_modele or "CRMV" in selected_modele:
-            st.session_state["lignes"] = "Site Voyageurs Kénitra"
-        else:
-            st.session_state["lignes"] = (
-                agent_found["Ligne_Site"]
-                if agent_found["Ligne_Site"]
-                else default_site
-            )
-
-        st.session_state["engins"] = (
-            agent_found["Engin"] if agent_found["Engin"] else default_engins
-        )
+    if official_info:
+        st.session_state["nom"] = official_info["Nom"]
+        st.session_state["prenom"] = official_info["Prenom"]
+        st.session_state["matricule"] = matricule_search
+        st.session_state["fonction"] = official_info["Fonction"]
     else:
-        st.session_state["fonction"] = modele_default_fonction
-        st.session_state["engins"] = default_engins
-        st.session_state["lignes"] = default_site
+        st.session_state["nom"] = ""
+        st.session_state["prenom"] = ""
+        st.session_state["matricule"] = matricule_search
+        st.session_state["fonction"] = "Chef de Trains"
+
+    tmpl_file, def_engins, def_site = determine_template_and_defaults(st.session_state.get("fonction", ""))
+
+    st.session_state["dt_auth"] = dates_info.get("Date_Autorisation", "")
+    st.session_state["dt_med"] = dates_info.get("Examen_Medical", "")
+    st.session_state["dt_psy"] = dates_info.get("Examen_Psychotechnique", "")
+    st.session_state["dt_prof"] = dates_info.get("Examen_Professionnel", "")
+    st.session_state["lignes"] = dates_info.get("Ligne_Site", "") if dates_info.get("Ligne_Site") else def_site
+    st.session_state["engins"] = dates_info.get("Engin", "") if dates_info.get("Engin") else def_engins
 
 st.session_state.setdefault("nom", "")
 st.session_state.setdefault("prenom", "")
 st.session_state.setdefault("matricule", matricule_search or "")
-st.session_state.setdefault("fonction", modele_default_fonction)
+st.session_state.setdefault("fonction", "")
 st.session_state.setdefault("dt_auth", "")
 st.session_state.setdefault("dt_med", "")
 st.session_state.setdefault("dt_psy", "")
 st.session_state.setdefault("dt_prof", "")
-st.session_state.setdefault("lignes", default_site)
-st.session_state.setdefault("engins", default_engins)
+st.session_state.setdefault("lignes", "")
+st.session_state.setdefault("engins", "")
 
 found_photo_path, search_status = get_agent_photo(matricule_search)
 
@@ -241,7 +205,7 @@ elif found_photo_path:
     final_photo_source = found_photo_path
     st.image(found_photo_path, caption=f"✅ {search_status}", width=120)
 elif matricule_search.strip():
-    st.warning(f"⚠️ {search_status} ({matricule_search})")
+    st.error(f"⚠️ {search_status} ({matricule_search})")
 
 st.markdown("---")
 st.subheader("Informations de l'Agent")
@@ -265,22 +229,16 @@ materiel_locos = st.text_input("Matériel / Locos / Rames", key="engins")
 
 
 def generate_custom_excel():
-    template_map = {
-        "CTR (Chef de Train)": "CTR.xlsx",
-        "CL (Conducteur de Ligne)": "CL.xlsx",
-        "CFT (Chef Formation Trains)": "CFT.xlsx",
-        "CRMV (Conducteur de Manœuvre)": "CRMV.xlsx",
-    }
-    target_tmpl = template_map.get(selected_modele, "CFT.xlsx")
+    tmpl_filename, _, _ = determine_template_and_defaults(fonction_input)
 
     tmpl_path = None
     for f in os.listdir(BASE_DIR):
-        if f.lower() == target_tmpl.lower():
+        if f.lower() == tmpl_filename.lower():
             tmpl_path = os.path.join(BASE_DIR, f)
             break
 
     if not tmpl_path:
-        tmpl_path = os.path.join(BASE_DIR, target_tmpl)
+        tmpl_path = os.path.join(BASE_DIR, tmpl_filename)
 
     wb = openpyxl.load_workbook(tmpl_path)
     sheet = wb.active
@@ -329,9 +287,8 @@ st.write("")
 if st.button("⚡ Générer la Carte"):
     excel_file = generate_custom_excel()
 
-    modele_code = selected_modele.split("(")[0].strip()
     clean_nom = nom_input.strip() if nom_input.strip() else "Agent"
-    custom_filename = f"Carte_{modele_code}_{clean_nom}.xlsx"
+    custom_filename = f"Carte_{clean_nom}_{matricule_input}.xlsx"
 
     st.success("✅ Carte générée avec succès !")
     st.download_button(
