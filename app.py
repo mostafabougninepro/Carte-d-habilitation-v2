@@ -12,13 +12,13 @@ import streamlit as st
 # ================= ================= =================
 st.set_page_config(
     page_title="ONCF — Management Sécurité",
-    page_icon="🚆",
+    page_icon="🚄",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ================= ================= =================
-# CSS PROPRE ET CORRIGÉ (SANS BUGS VISUELS)
+# CSS PROPRE AVEC ALIGNEMENT ET TGV PREMIUM
 # ================= ================= =================
 CLEAN_CSS = """
 <style>
@@ -36,13 +36,17 @@ CLEAN_CSS = """
     .exec-header {
         background: linear-gradient(135deg, #0B1E36 0%, #16325B 100%);
         border-bottom: 4px solid #FF6B00;
-        padding: 24px 32px;
+        padding: 26px 36px;
         border-radius: 12px;
         box-shadow: 0 10px 20px rgba(11, 30, 54, 0.15);
         margin-bottom: 30px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+    }
+
+    .exec-title-container {
+        padding-left: 10px; /* تحريك النص قليلاً لليمين */
     }
 
     .exec-title-main {
@@ -59,7 +63,7 @@ CLEAN_CSS = """
         color: #94A3B8;
         font-size: 13px;
         font-weight: 600;
-        margin-top: 5px;
+        margin-top: 6px;
         text-transform: uppercase;
         letter-spacing: 1px;
     }
@@ -154,7 +158,7 @@ if not st.session_state["logged_in"]:
     with c2:
         st.markdown("""
             <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border-top: 4px solid #FF6B00;">
-                <div style="font-size: 48px; margin-bottom: 10px;">🚆</div>
+                <div style="font-size: 48px; margin-bottom: 10px;">🚄⚡</div>
                 <h2 style="color: #0B1E36; font-weight: 800; margin: 0; font-size: 24px;">ONCF</h2>
                 <p style="color: #64748B; font-size: 13px; font-weight: 600; text-transform: uppercase;">System management securite CCF.TC.Kenitra</p>
                 <hr style="border: 0; height: 1px; background: #E2E8F0; margin: 20px 0;">
@@ -179,13 +183,13 @@ if not st.session_state["logged_in"]:
     st.stop()
 
 # ================= ================= =================
-# 3. HEADER EXECUTIVE ONCF & MENU
+# 3. HEADER EXECUTIVE ONCF & MENU (مع TGV الـوُّاعِر)
 # ================= ================= =================
 
 st.markdown(f"""
     <div class="exec-header">
-        <div>
-            <div class="exec-title-main">🚆 Office National des Chemins de Fer</div>
+        <div class="exec-title-container">
+            <div class="exec-title-main">🚄⚡ Office National des Chemins de Fer</div>
             <div class="exec-title-sub">System management securite CCF.TC.Kenitra</div>
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">
