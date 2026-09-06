@@ -18,9 +18,9 @@ st.set_page_config(
 )
 
 # ================= ================= =================
-# HIGH-CONTRAST PROFESSIONAL EXECUTIVE CSS
+# LOGIN INTERFACE EXCLUSIVE HIGH-CONTRAST CSS
 # ================= ================= =================
-PRO_CSS = """
+LOGIN_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -28,123 +28,99 @@ PRO_CSS = """
         font-family: 'Inter', sans-serif !important;
     }
 
+    /* Background global propre */
     .stApp {
         background-color: #090D16;
         color: #FFFFFF;
     }
 
-    /* Top Executive Header */
-    .exec-header {
-        background: #1E293B;
-        border-bottom: 3px solid #FF6B00;
-        padding: 20px 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-        margin-bottom: 25px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .exec-title-wrapper {
-        display: flex;
-        align-items: baseline;
-        gap: 12px;
-    }
-
-    .exec-title-main {
-        color: #FFFFFF;
-        font-size: 20px;
-        font-weight: 700;
-        margin: 0;
-        letter-spacing: -0.3px;
-    }
-
-    .exec-title-sub {
-        color: #38BDF8;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-left: 1px solid #475569;
-        padding-left: 10px;
-    }
-
-    .exec-badge {
-        background: rgba(255, 107, 0, 0.2);
-        color: #FF9933;
-        border: 1px solid #FF6B00;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
-    /* High Contrast Login Box */
-    .login-box {
+    /* Carte de Connexion Centralisée */
+    .login-container {
         background: #131B2E;
         border: 1px solid #2A3B5C;
-        border-top: 4px solid #FF6B00;
-        padding: 40px;
-        border-radius: 14px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        border-top: 5px solid #FF6B00;
+        padding: 45px 40px;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
     }
 
-    /* Labels visibility fix */
-    .stTextInput label, .stSelectbox label {
-        color: #E2E8F0 !important;
+    .login-title-main {
+        color: #FF6B00;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-align: center;
+        margin-bottom: 2px;
+    }
+
+    .login-title-sub {
+        color: #FFFFFF;
+        font-size: 16px;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+
+    .login-title-desc {
+        color: #38BDF8;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    /* Visibilité Totale des Labels des Inputs de Connexion */
+    .login-form-container label {
+        color: #FFFFFF !important;
         font-weight: 600 !important;
         font-size: 14px !important;
     }
 
-    /* Form Fields High Contrast */
-    .stTextInput input, .stSelectbox select {
+    .login-form-container input {
         border-radius: 8px !important;
         border: 1px solid #334155 !important;
         padding: 12px 14px !important;
         background-color: #1E293B !important;
         color: #FFFFFF !important;
         font-weight: 600 !important;
+        font-size: 15px !important;
     }
 
-    .stTextInput input:focus {
+    .login-form-container input:focus {
         border-color: #FF6B00 !important;
-        box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.3) !important;
+        box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.3) !important;
     }
 
-    /* Action Buttons - Fully Visible & Professional */
-    .stButton>button {
+    /* Bouton de Connexion Pro et Visible */
+    .login-btn-container button {
         background: #FF6B00 !important;
         color: #FFFFFF !important;
         border-radius: 8px !important;
         border: none !important;
         font-weight: 700 !important;
-        font-size: 15px !important;
+        font-size: 16px !important;
         padding: 12px 20px !important;
-        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.4) !important;
+        width: 100% !important;
+        box-shadow: 0 6px 15px rgba(255, 107, 0, 0.4) !important;
         transition: all 0.2s ease !important;
+        margin-top: 10px;
     }
 
-    .stButton>button:hover {
+    .login-btn-container button:hover {
         background: #E65C00 !important;
         transform: translateY(-1px);
     }
 
-    /* Sidebar Clean Look */
-    [data-testid="stSidebar"] {
-        background-color: #0B111E !important;
-        border-right: 1px solid #1E293B;
-    }
-
-    /* Hide default Streamlit elements */
+    /* Masquer les éléments parasites de Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 </style>
 """
 
-st.markdown(PRO_CSS, unsafe_allow_html=True)
+st.markdown(LOGIN_CSS, unsafe_allow_html=True)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "users_db.json")
@@ -178,7 +154,7 @@ st.session_state.setdefault("current_user", None)
 st.session_state.setdefault("user_role", None)
 
 # ================= ================= =================
-# 2. MODULE DE CONNEXION (LOGIN - HIGH CONTRAST)
+# 2. MODULE DE CONNEXION EXCLUSIF (LOGIN PAGE PRO)
 # ================= ================= =================
 if not st.session_state["logged_in"]:
     st.markdown("<br><br>", unsafe_allow_html=True)
@@ -186,20 +162,21 @@ if not st.session_state["logged_in"]:
     
     with c2:
         st.markdown("""
-            <div class="login-box">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <div style="color: #FF6B00; font-size: 26px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 5px;">ONCF</div>
-                    <div style="color: #FFFFFF; font-size: 16px; font-weight: 700;">Office National des Chemins de Fer</div>
-                    <p style="color: #38BDF8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px;">System Management Sécurité CCF.TC.Kenitra</p>
-                </div>
+            <div class="login-container">
+                <div class="login-title-main">ONCF</div>
+                <div class="login-title-sub">Office National des Chemins de Fer</div>
+                <div class="login-title-desc">System Management Sécurité CCF.TC.Kenitra</div>
                 <hr style="border: 0; height: 1px; background: #2A3B5C; margin: 20px 0;">
             </div>
         """, unsafe_allow_html=True)
         
+        # Formulaire natif englobé dans la classe pour cibler proprement les textes et inputs
+        st.markdown('<div class="login-form-container">', unsafe_allow_html=True)
         with st.form("login_form"):
             input_matricule = st.text_input("Matricule / Identifiant").strip().upper()
             input_password = st.text_input("Mot de passe", type="password")
             st.markdown("<br>", unsafe_allow_html=True)
+            
             submit_login = st.form_submit_button("Se Connecter", use_container_width=True)
             
             if submit_login:
@@ -211,20 +188,20 @@ if not st.session_state["logged_in"]:
                     st.rerun()
                 else:
                     st.error("❌ Identifiants incorrects. Veuillez réessayer.")
+        st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
 # ================= ================= =================
-# 3. HEADER EXECUTIVE ONCF & MENU
+# 3. HEADER INTERne ONCF & MENU (APRES CONNEXION)
 # ================= ================= =================
-
 st.markdown(f"""
-    <div class="exec-header">
-        <div class="exec-title-wrapper">
-            <div class="exec-title-main">ONCF — Sécurité</div>
-            <div class="exec-title-sub">CCF.TC.Kénitra</div>
+    <div style="background: #1E293B; border-bottom: 3px solid #FF6B00; padding: 20px 30px; border-radius: 10px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: baseline; gap: 12px;">
+            <div style="color: #FFFFFF; font-size: 20px; font-weight: 700; margin: 0;">ONCF — Sécurité</div>
+            <div style="color: #38BDF8; font-size: 12px; font-weight: 600; text-transform: uppercase; border-left: 1px solid #475569; padding-left: 10px;">CCF.TC.Kénitra</div>
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">
-            <div class="exec-badge">{st.session_state['user_role']}</div>
+            <div style="background: rgba(255, 107, 0, 0.2); color: #FF9933; border: 1px solid #FF6B00; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase;">{st.session_state['user_role']}</div>
             <div style="color: #FFFFFF; font-size: 13px; font-weight: 600; background: #131B2E; padding: 6px 14px; border-radius: 6px; border: 1px solid #2A3B5C;">
                 👤 {st.session_state['current_user']}
             </div>
@@ -242,10 +219,8 @@ else:
 st.sidebar.markdown("---")
 st.sidebar.markdown("### ⚙️ Session Active")
 st.sidebar.info(f"**Identifiant:** `{st.session_state['current_user']}`\n\n**Rôle:** {st.session_state['user_role']}")
-
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
-# زر Déconnexion احترافي
 if st.sidebar.button("🚪 Déconnexion", use_container_width=True):
     st.session_state["logged_in"] = False
     st.session_state["current_user"] = None
