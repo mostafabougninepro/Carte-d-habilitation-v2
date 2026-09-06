@@ -18,9 +18,9 @@ st.set_page_config(
 )
 
 # ================= ================= =================
-# PROFESSIONAL CORPORATE DARK CSS (CLEAN & MINIMALIST)
+# HIGH-CONTRAST PROFESSIONAL EXECUTIVE CSS
 # ================= ================= =================
-CORPORATE_CSS = """
+PRO_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -29,8 +29,8 @@ CORPORATE_CSS = """
     }
 
     .stApp {
-        background-color: #0F172A;
-        color: #F8FAFC;
+        background-color: #090D16;
+        color: #FFFFFF;
     }
 
     /* Top Executive Header */
@@ -39,7 +39,7 @@ CORPORATE_CSS = """
         border-bottom: 3px solid #FF6B00;
         padding: 20px 30px;
         border-radius: 10px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
         margin-bottom: 25px;
         display: flex;
         align-items: center;
@@ -61,7 +61,7 @@ CORPORATE_CSS = """
     }
 
     .exec-title-sub {
-        color: #94A3B8;
+        color: #38BDF8;
         font-size: 12px;
         font-weight: 600;
         text-transform: uppercase;
@@ -71,9 +71,9 @@ CORPORATE_CSS = """
     }
 
     .exec-badge {
-        background: rgba(255, 107, 0, 0.15);
-        color: #FF8533;
-        border: 1px solid rgba(255, 107, 0, 0.3);
+        background: rgba(255, 107, 0, 0.2);
+        color: #FF9933;
+        border: 1px solid #FF6B00;
         padding: 4px 12px;
         border-radius: 20px;
         font-size: 11px;
@@ -81,49 +81,59 @@ CORPORATE_CSS = """
         text-transform: uppercase;
     }
 
-    /* Professional Clean Login Box */
+    /* High Contrast Login Box */
     .login-box {
-        background: #1E293B;
-        border: 1px solid #334155;
+        background: #131B2E;
+        border: 1px solid #2A3B5C;
         border-top: 4px solid #FF6B00;
-        padding: 35px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        padding: 40px;
+        border-radius: 14px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
     }
 
-    /* Form Fields */
+    /* Labels visibility fix */
+    .stTextInput label, .stSelectbox label {
+        color: #E2E8F0 !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+    }
+
+    /* Form Fields High Contrast */
     .stTextInput input, .stSelectbox select {
-        border-radius: 6px !important;
-        border: 1px solid #475569 !important;
-        padding: 10px 14px !important;
-        background-color: #0F172A !important;
+        border-radius: 8px !important;
+        border: 1px solid #334155 !important;
+        padding: 12px 14px !important;
+        background-color: #1E293B !important;
         color: #FFFFFF !important;
-        font-weight: 500 !important;
+        font-weight: 600 !important;
     }
 
     .stTextInput input:focus {
         border-color: #FF6B00 !important;
-        box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.2) !important;
+        box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.3) !important;
     }
 
-    /* Action Buttons */
+    /* Action Buttons - Fully Visible & Professional */
     .stButton>button {
         background: #FF6B00 !important;
         color: #FFFFFF !important;
-        border-radius: 6px !important;
+        border-radius: 8px !important;
         border: none !important;
         font-weight: 700 !important;
-        padding: 10px 20px !important;
-        transition: background 0.2s ease !important;
+        font-size: 15px !important;
+        padding: 12px 20px !important;
+        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.4) !important;
+        transition: all 0.2s ease !important;
     }
 
     .stButton>button:hover {
         background: #E65C00 !important;
+        transform: translateY(-1px);
     }
 
     /* Sidebar Clean Look */
     [data-testid="stSidebar"] {
-        background-color: #0B132B !important;
+        background-color: #0B111E !important;
         border-right: 1px solid #1E293B;
     }
 
@@ -134,7 +144,7 @@ CORPORATE_CSS = """
 </style>
 """
 
-st.markdown(CORPORATE_CSS, unsafe_allow_html=True)
+st.markdown(PRO_CSS, unsafe_allow_html=True)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "users_db.json")
@@ -168,21 +178,21 @@ st.session_state.setdefault("current_user", None)
 st.session_state.setdefault("user_role", None)
 
 # ================= ================= =================
-# 2. MODULE DE CONNEXION (LOGIN - CLEAN CORPORATE)
+# 2. MODULE DE CONNEXION (LOGIN - HIGH CONTRAST)
 # ================= ================= =================
 if not st.session_state["logged_in"]:
     st.markdown("<br><br>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns([1, 1.1, 1])
+    c1, c2, c3 = st.columns([1, 1.2, 1])
     
     with c2:
         st.markdown("""
             <div class="login-box">
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <div style="color: #FF6B00; font-size: 22px; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px;">ONCF</div>
-                    <div style="color: #FFFFFF; font-size: 15px; font-weight: 700;">Office National des Chemins de Fer</div>
-                    <p style="color: #94A3B8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 6px;">System Management Sécurité CCF.TC.Kenitra</p>
+                    <div style="color: #FF6B00; font-size: 26px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 5px;">ONCF</div>
+                    <div style="color: #FFFFFF; font-size: 16px; font-weight: 700;">Office National des Chemins de Fer</div>
+                    <p style="color: #38BDF8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px;">System Management Sécurité CCF.TC.Kenitra</p>
                 </div>
-                <hr style="border: 0; height: 1px; background: #334155; margin: 15px 0;">
+                <hr style="border: 0; height: 1px; background: #2A3B5C; margin: 20px 0;">
             </div>
         """, unsafe_allow_html=True)
         
@@ -215,7 +225,7 @@ st.markdown(f"""
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">
             <div class="exec-badge">{st.session_state['user_role']}</div>
-            <div style="color: #E2E8F0; font-size: 13px; font-weight: 600; background: #0F172A; padding: 5px 12px; border-radius: 6px; border: 1px solid #334155;">
+            <div style="color: #FFFFFF; font-size: 13px; font-weight: 600; background: #131B2E; padding: 6px 14px; border-radius: 6px; border: 1px solid #2A3B5C;">
                 👤 {st.session_state['current_user']}
             </div>
         </div>
