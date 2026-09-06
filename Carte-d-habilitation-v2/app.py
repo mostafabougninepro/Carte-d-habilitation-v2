@@ -14,34 +14,68 @@ st.set_page_config(
 
 st.title("🎴 Générateur de Cartes d'Habilitation")
 
-# 1. تحديد المسار المطلق والجامع للمجلد الحالي لـ app.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-# دالة بحث قوية ومستقلة تماماً عن هيكلة المسارات
 def get_agent_photo(matricule):
     if not matricule or not str(matricule).strip():
         return None, "Matricule vide"
 
     target = str(matricule).strip().lower()
 
-    # مسح شامل للمجلد الحالي وكافة المجلدات الفرعية (photo A, photo B, etc.)
+    valid_extensions = [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".JPG",
+        ".JPEG",
+        ".PNG",
+        ".Jpg",
+    ]
+
+    possible_folders = [
+        os.path.join(BASE_DIR, "photo A"),
+        os.path.join(BASE_DIR, "photo B"),
+        os.path.join(BASE_DIR, "Carte-d-habilitation-v2", "photo A"),
+        os.path.join(BASE_DIR, "Carte-d-habilitation-v2", "photo B"),
+        os.path.join(os.getcwd(), "photo A"),
+        os.path.join(os.getcwd(), "photo B"),
+        os.path.join(os.getcwd(), "Carte-d-habilitation-v2", "photo A"),
+        os.path.join(os.getcwd(), "Carte-d-habilitation-v2", "photo B"),
+    ]
+
+    for folder_path in possible_folders:
+        if os.path.exists(folder_path):
+            try:
+                for file_name in os.listdir(folder_path):
+                    name_part, ext = os.path.splitext(file_name)
+                    if (
+                        name_part.strip().lower() == target
+                        and ext in valid_extensions
+                    ):
+                        full_path = os.path.join(folder_path, file_name)
+                        folder_name = os.path.basename(folder_path)
+                        return (
+                            full_path,
+                            f"Photo trouvée dans [{folder_name}]",
+                        )
+            except Exception:
+                continue
+
     for root, dirs, files in os.walk(BASE_DIR):
-        for file in files:
-            name_part, ext = os.path.splitext(file)
-            # التأكد أن الملف صورة وأن اسمه يطابق الماتريكيل
-            if ext.lower() in [
-                ".jpg",
-                ".jpeg",
-                ".png",
-            ] and name_part.strip().lower() == target:
-                full_path = os.path.join(root, file)
-                return full_path, f"Trouvé dans : {os.path.basename(root)}"
+        for file_name in files:
+            name_part, ext = os.path.splitext(file_name)
+            if (
+                name_part.strip().lower() == target
+                and ext.lower() in valid_extensions
+            ):
+                full_path = os.path.join(root, file_name)
+                folder_name = os.path.basename(root)
+                return full_path, f"Photo trouvée dans [{folder_name}]"
 
     return None, "Non trouvée dans les dossiers"
 
 
-# البحث فـ ملف Excel الخاص بالـ Registre
 def get_agent_data(matricule):
     excel_filename = None
     for f in os.listdir(BASE_DIR):
@@ -180,7 +214,7 @@ if "last_matricule" not in st.session_state:
     st.session_state["last_matricule"] = ""
 
 matricule_search = st.text_input(
-    "🔍 Rechercher par Matricule :", placeholder="Ex: 47614H"
+    "🔍 Rechercher par Matricule :", placeholder="Ex: 47622S"
 )
 
 agent_found = get_agent_data(matricule_search) if matricule_search else None
@@ -229,7 +263,6 @@ st.session_state.setdefault("dt_prof", "")
 st.session_state.setdefault("lignes", default_site)
 st.session_state.setdefault("engins", default_engins)
 
-# البحث المباشر الشامل عن الصورة
 found_photo_path, search_status = get_agent_photo(matricule_search)
 
 uploaded_photo = st.file_uploader(
@@ -268,7 +301,6 @@ lignes_sites = st.text_input("Lignes / Sites autorisés", key="lignes")
 materiel_locos = st.text_input("Matériel / Locos / Rames", key="engins")
 
 
-# توليد ملف Excel
 def generate_custom_excel():
     template_map = {
         "CTR (Chef de Train)": "CTR.xlsx",
