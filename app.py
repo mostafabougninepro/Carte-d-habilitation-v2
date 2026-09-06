@@ -5,29 +5,12 @@ import streamlit as st
 # ================= CONFIGURATION & STYLES =================
 st.set_page_config(
     page_title="Portail ONCF - Gestion & Accès",
-    page_icon="🚄",
+    page_icon="🚆",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-st.markdown("""
-    <style>
-    .main { background-color: #f8f9fa; }
-    .stButton>button {
-        width: 100%;
-        background-color: #003366;
-        color: white;
-        border-radius: 5px;
-        font-weight: bold;
-    }
-    .stButton>button:hover {
-        background-color: #002244;
-        color: #ffffff;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# ================= DATABASE GESTION DES UTILISATEURS =================
+# Database file
 USERS_FILE = "users_db.json"
 
 def load_users():
@@ -85,7 +68,7 @@ def login_page():
                     st.session_state.current_user = matricule
                     st.session_state.user_role = users[matricule].get("role", "Utilisateur")
                     st.session_state.user_name = users[matricule].get("nom", matricule)
-                    st.success("Connexion réussية !")
+                    st.success("Connexion réussie !")
                     st.rerun()
                 else:
                     st.error("Identifiants incorrects.")
@@ -94,7 +77,6 @@ def login_page():
 if not st.session_state["logged_in"]:
     login_page()
 else:
-    # Sidebar Navigation - آمنة وبدون أخطاء
     st.sidebar.title("🚆 Menu ONCF")
     user_display_name = st.session_state.get("user_name") or st.session_state.get("current_user", "Utilisateur")
     user_display_role = st.session_state.get("user_role", "Utilisateur")
@@ -113,7 +95,7 @@ else:
     choice = st.sidebar.radio("Navigation", menu_options)
     
     if choice == "🏠 Accueil / Tableau de Bord":
-        st.title("📊 Tableau de Bord - Portail ONCF")
+        st.title("Tableau de Bord - Portail ONCF")
         st.info("Bienvenue sur votre plateforme de gestion centralisée.")
         
         col1, col2, col3 = st.columns(3)
@@ -125,7 +107,7 @@ else:
             st.metric(label="Session Actuelle", value=st.session_state.current_user)
             
         st.markdown("---")
-        st.subheader("💡 Guide Rapide")
+        st.subheader("Guide Rapide")
         st.write("- Utilisez le menu à gauche pour naviguer.")
         if user_display_role == "Admin":
             st.write("- En tant qu'**Admin**, vous pouvez ajouter de nouveaux utilisateurs ou modifier leurs rôles depuis l'onglet **Gestion des Accès**.")
@@ -134,7 +116,7 @@ else:
         if user_display_role != "Admin":
             st.error("Accès non autorisé.")
         else:
-            st.title("👥 Gestion des Accès et Utilisateurs")
+            st.title("Gestion des Accès et Utilisateurs")
             st.write("Créez de nouveaux matricules ou gérez les accès existants.")
             
             tab1, tab2 = st.tabs(["➕ Ajouter un Utilisateur", "📋 Liste des Utilisateurs"])
@@ -175,7 +157,7 @@ else:
                 st.dataframe(users_data, use_container_width=True)
                 
                 st.markdown("---")
-                st.subheader("🗑️ Supprimer un Utilisateur")
+                st.subheader("Supprimer un Utilisateur")
                 del_mat = st.selectbox("Sélectionner un Matricule à supprimer", [m for m in st.session_state.users.keys() if m != "ADMIN"])
                 if st.button("Supprimer l'utilisateur sélectionné"):
                     if del_mat in st.session_state.users:
