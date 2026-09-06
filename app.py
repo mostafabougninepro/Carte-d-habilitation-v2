@@ -1,4 +1,5 @@
 import io
+import json
 import os
 import openpyxl
 from openpyxl.drawing.image import Image as OpenpyxlImage
@@ -12,11 +13,165 @@ st.set_page_config(
     layout="centered",
 )
 
-st.title("🛡️ Système Management Sécurité")
-st.subheader("Générateur de Cartes d'Habilitation")
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+USERS_FILE = os.path.join(BASE_DIR, "users_db.json")
 
+# ================= ================= =================
+# 1. إدارة ملف المستخدمين (USERS DATABASE)
+# ================= ================= =================
+def load_users():
+    """تحميل حسابات المستخدمين من ملف JSON"""
+    if not os.path.exists(USERS_FILE):
+        # حساب الأدمن الافتراضي (يمكنك تغييره لاحقاً)
+        default_users = {
+            "ADMIN": {
+                "password": "adminpassword123",
+                "role": "Admin",
+                "nom": "Administrateur"
+            }
+        }
+        save_users(default_users)
+        return default_users
+    try:
+        with open(USERS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_users(users):
+    """حفظ الحسابات فـ ملف JSON"""
+    with open(USERS_FILE, "w", encoding="utf-8") as f:
+        json.dump(users, f, ensure_ascii=False, indent=4)
+
+# ================= ================= =================
+# 2. إدارة جلسة التسجيل (SESSION STATE)
+# ================= ================= =================
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+if "current_user" not in st.session_state:
+    st.session_state["current_user"] = None
+if "user_role" not in st.session_state:
+    st.session_state["user_role"] = None
+
+# ================= ================= =================
+# 3. واجهة تسجيل الدخول (LOGIN INTERFACE)
+# ================= ================= =================
+if not st.session_state["logged_in"]:
+    st.markdown(
+        """
+        <style>
+        .login-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #1E3A8A;
+            margin-bottom: 5px;
+        }
+        .login-subtitle {
+            text-align: center;
+            font-size: 18px;
+            color: #4B5563;
+            margin-bottom: 30px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("<div class='login-title'>🛡️ Système Management Sécurité</div>", unsafe_allow_html=True)
+    st.markdown("<div class='login-subtitle'>Plateforme de Gestion des Cartes d'Habilitation</div>", unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.subheader("🔑 Connexion")
+        input_matricule = st.text_input("Matricule / Identifiant").strip().upper()
+        input_password = st.text_input("Mot de passe", type="password")
+        
+        if st.button("Se Connecter", use_container_width=True):
+            users = load_users()
+            if input_matricule in users and users[input_matricule]["password"] == input_password:
+                st.session_state["logged_in"] = True
+                st.session_state["current_user"] = input_matricule
+                st.session_state["user_role"] = users[input_matricule].get("role", "Utilisateur")
+                st.success("Connexion réussie !")
+                st.rerun()
+            else:
+                st.error("❌ Matricule ou Mot de passe incorrect !")
+
+    st.stop()  # إيقاف التنفيذ حتال يتسجل الدخول
+
+# ================= ================= =================
+# 4. التطبيق الرئيسي بعد تسجيل الدخول
+# ================= ================= =================
+
+# الشريط العلوي (Header & Logout)
+top_col1, top_col2 = st.columns([3, 1])
+with top_col1:
+    st.write(f"👤 Connecté en tant que : **{st.session_state['current_user']}** ({st.session_state['user_role']})")
+with top_col2:
+    if st.button("Déconnexion 🚪"):
+        st.session_state["logged_in"] = False
+        st.session_state["current_user"] = None
+        st.session_state["user_role"] = None
+        st.rerun()
+
+st.title("🛡️ Système Management Sécurité")
+
+# القوائم المتاحة حسب الصلاحيات
+if st.session_state["user_role"] == "Admin":
+    menu = st.sidebar.radio("📌 Navigation", ["🪪 Générateur de Cartes", "👥 Gestion des Utilisateurs"])
+else:
+    menu = "🪪 Générateur de Cartes"
+
+# ================= ================= =================
+# 5. لوحة إدارة المستخدمين (خاصة بالأدمن فقط)
+# ================= ================= =================
+if menu == "👥 Gestion des Utilisateurs":
+    st.header("👥 Gestion des Utilisateurs")
+    st.info("Seul l'administrateur a le droit d'ajouter ou de modifier des utilisateurs.")
+
+    users = load_users()
+
+    # نموذج إضافة مستخدم جديد
+    with st.form("add_user_form"):
+        st.subheader("➕ Ajouter un nouvel utilisateur")
+        new_mat = st.text_input("Matricule / Identifiant").strip().upper()
+        new_pass = st.text_input("Mot de passe", type="password")
+        new_role = st.selectbox("Rôle", ["Utilisateur", "Admin"])
+        
+        submit_btn = st.form_submit_button("Ajouter l'utilisateur")
+        
+        if submit_btn:
+            if not new_mat or not new_pass:
+                st.error("Veuillez remplir tous les champs !")
+            elif new_mat in users:
+                st.warning("Cet utilisateur existe déjà !")
+            else:
+                users[new_mat] = {
+                    "password": new_pass,
+                    "role": new_role
+                }
+                save_users(users)
+                st.success(f"✅ Utilisateur {new_mat} ajouté avec succès !")
+                st.rerun()
+
+    st.markdown("---")
+    st.subheader("📋 Liste des utilisateurs enregistrés")
+    
+    users_data = []
+    for mat, details in users.items():
+        users_data.append({
+            "Matricule": mat,
+            "Rôle": details.get("role", "Utilisateur"),
+            "Mot de passe": "••••••••"
+        })
+    st.table(users_data)
+    st.stop()
+
+# ================= ================= =================
+# 6. مولد البطاقات (Générateur de Cartes)
+# ================= ================= =================
+st.subheader("Générateur de Cartes d'Habilitation")
 
 def get_agent_photo(matricule):
     if not matricule or not str(matricule).strip():
@@ -41,7 +196,6 @@ def get_agent_photo(matricule):
 
 
 def get_official_agent_info(matricule):
-    """قراءة الاسم والكنية والوظيفة من ملف التحديث Mis_A_Jour photos.xlsx"""
     excel_path = os.path.join(BASE_DIR, "Mis_A_Jour photos.xlsx")
     if not os.path.exists(excel_path):
         return None
@@ -51,7 +205,6 @@ def get_official_agent_info(matricule):
         for sheet_name in xl.sheet_names:
             df = pd.read_excel(excel_path, sheet_name=sheet_name)
             
-            # البحث عن الأعمدة المناسبة
             mle_col = None
             for col in df.columns:
                 if str(col).strip().lower() in ["mle", "matricule"]:
@@ -74,7 +227,6 @@ def get_official_agent_info(matricule):
 
 
 def get_agent_dates_and_details(matricule):
-    """قراءة التواريخ والـ Engin والـ Site من الـ Registre"""
     excel_filename = None
     for f in os.listdir(BASE_DIR):
         if f.lower().endswith(".xlsx") and "registre" in f.lower():
@@ -142,7 +294,6 @@ def determine_template_and_defaults(fonction):
     elif "ligne" in f_lower or "cl" in f_lower:
         return "CL.xlsx", "E1450, E1400, Z2M", ""
     else:
-        # Default to CTR (Chef de Trains / Chef de Train)
         return "CTR.xlsx", "E1450, E1400, E1250, Z2M, DH400", ""
 
 
@@ -262,7 +413,6 @@ def generate_custom_excel():
             img_bytes = final_photo_source.read()
             pil_img = PILImage.open(io.BytesIO(img_bytes))
 
-        # أبعاد الصورة بالضبط: 2cm عرض × 1.44cm طول
         target_width_px = int(2.0 * 37.8)   # ~75 px
         target_height_px = int(1.44 * 37.8) # ~54 px
 
