@@ -11,55 +11,58 @@ import streamlit as st
 # CONFIGURATION DE LA PAGE
 # ================= ================= =================
 st.set_page_config(
-    page_title="ONCF — Management Sécurité",
+    page_title="ONCF — Management Sécurité Kénitra",
     page_icon="🚄",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ================= ================= =================
-# CSS PROPRE (TITRE ET SOUS-TITRE SUR LA MÊME LIGNE)
+# MODERN ULTRA-EXECUTIVE CSS (DARK MODE PREMIUM)
 # ================= ================= =================
-CLEAN_CSS = """
+EXECUTIVE_CSS = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
 
     .stApp {
-        background-color: #F4F7F9;
+        background: radial-gradient(circle at 50% 20%, #111827 0%, #0B0F19 100%);
+        color: #F3F4F6;
     }
 
     /* Top Executive Header */
     .exec-header {
-        background: linear-gradient(135deg, #0B1E36 0%, #16325B 100%);
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.9) 100%);
+        border: 1px solid rgba(255, 107, 0, 0.3);
         border-bottom: 4px solid #FF6B00;
         padding: 24px 32px;
-        border-radius: 12px;
-        box-shadow: 0 10px 20px rgba(11, 30, 54, 0.15);
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         margin-bottom: 30px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        backdrop-filter: blur(10px);
     }
 
     .exec-title-wrapper {
         display: flex;
         align-items: baseline;
         gap: 15px;
-        padding-left: 10px;
     }
 
     .exec-title-main {
         color: #FFFFFF;
-        font-size: 22px;
+        font-size: 24px;
         font-weight: 800;
         margin: 0;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
+        letter-spacing: -0.5px;
     }
 
     .exec-title-sub {
@@ -67,13 +70,13 @@ CLEAN_CSS = """
         font-size: 13px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.8px;
-        border-left: 2px solid rgba(255, 255, 255, 0.3);
-        padding-left: 12px;
+        letter-spacing: 1px;
+        border-left: 2px solid rgba(255, 255, 255, 0.2);
+        padding-left: 14px;
     }
 
     .exec-badge {
-        background: rgba(255, 107, 0, 0.2);
+        background: rgba(255, 107, 0, 0.15);
         color: #FF8533;
         border: 1px solid rgba(255, 107, 0, 0.4);
         padding: 6px 16px;
@@ -81,36 +84,58 @@ CLEAN_CSS = """
         font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
-        white-space: nowrap;
+        letter-spacing: 0.5px;
+    }
+
+    /* Glassmorphism Login Container */
+    .login-container {
+        background: rgba(17, 24, 39, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 4px solid #FF6B00;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(15px);
     }
 
     /* Form Fields Customization */
     .stTextInput input, .stSelectbox select {
-        border-radius: 6px !important;
-        border: 1px solid #CBD5E1 !important;
-        padding: 10px 14px !important;
-        background-color: #FFFFFF !important;
+        border-radius: 8px !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        padding: 12px 16px !important;
+        background-color: rgba(30, 41, 59, 0.6) !important;
+        color: #FFFFFF !important;
+        font-weight: 500 !important;
     }
 
     .stTextInput input:focus {
-        border-color: #0B1E36 !important;
-        box-shadow: 0 0 0 2px rgba(11, 30, 54, 0.2) !important;
+        border-color: #FF6B00 !important;
+        box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.25) !important;
+        background-color: rgba(30, 41, 59, 0.9) !important;
     }
 
-    /* Standard Button Customization */
+    /* Modern Buttons */
     .stButton>button {
-        background: #0B1E36 !important;
+        background: linear-gradient(135deg, #FF6B00 0%, #E65C00 100%) !important;
         color: #FFFFFF !important;
         border-radius: 8px !important;
         border: none !important;
         font-weight: 700 !important;
-        padding: 10px 20px !important;
-        transition: all 0.2s !important;
+        padding: 12px 24px !important;
+        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3) !important;
+        transition: all 0.3s ease !important;
     }
 
     .stButton>button:hover {
-        background: #FF6B00 !important;
+        background: linear-gradient(135deg, #FF8533 0%, #FF6B00 100%) !important;
         transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(255, 107, 0, 0.5) !important;
+    }
+
+    /* Sidebar Refinement */
+    [data-testid="stSidebar"] {
+        background-color: #0B0F19 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     /* Hide default Streamlit elements */
@@ -120,7 +145,7 @@ CLEAN_CSS = """
 </style>
 """
 
-st.markdown(CLEAN_CSS, unsafe_allow_html=True)
+st.markdown(EXECUTIVE_CSS, unsafe_allow_html=True)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "users_db.json")
@@ -154,19 +179,21 @@ st.session_state.setdefault("current_user", None)
 st.session_state.setdefault("user_role", None)
 
 # ================= ================= =================
-# 2. MODULE DE CONNEXION (LOGIN)
+# 2. MODULE DE CONNEXION (LOGIN - ULTRA MODERNE)
 # ================= ================= =================
 if not st.session_state["logged_in"]:
     st.markdown("<br><br>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns([1, 1.2, 1])
+    c1, c2, c3 = st.columns([1, 1.3, 1])
     
     with c2:
         st.markdown("""
-            <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border-top: 4px solid #FF6B00;">
-                <div style="font-size: 48px; margin-bottom: 10px;">🚄⚡</div>
-                <h2 style="color: #0B1E36; font-weight: 800; margin: 0; font-size: 24px;">ONCF</h2>
-                <p style="color: #64748B; font-size: 13px; font-weight: 600; text-transform: uppercase;">System management securite CCF.TC.Kenitra</p>
-                <hr style="border: 0; height: 1px; background: #E2E8F0; margin: 20px 0;">
+            <div class="login-container">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <div style="font-size: 52px; margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(255,107,0,0.4));">🚄⚡</div>
+                    <h2 style="color: #FFFFFF; font-weight: 800; margin: 0; font-size: 26px; letter-spacing: -0.5px;">ONCF</h2>
+                    <p style="color: #94A3B8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-top: 6px;">System Management Sécurité CCF.TC.Kenitra</p>
+                </div>
+                <hr style="border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;">
             </div>
         """, unsafe_allow_html=True)
         
@@ -184,22 +211,22 @@ if not st.session_state["logged_in"]:
                     st.session_state["user_role"] = users[input_matricule].get("role", "Utilisateur")
                     st.rerun()
                 else:
-                    st.error("❌ Identifiants incorrects.")
+                    st.error("❌ Identifiants incorrects. Veuillez réessayer.")
     st.stop()
 
 # ================= ================= =================
-# 3. HEADER EXECUTIVE ONCF & MENU (نفس السطر)
+# 3. HEADER EXECUTIVE ONCF & MENU
 # ================= ================= =================
 
 st.markdown(f"""
     <div class="exec-header">
         <div class="exec-title-wrapper">
             <div class="exec-title-main">🚄⚡ Office National des Chemins de Fer</div>
-            <div class="exec-title-sub">System management securite CCF.TC.Kenitra</div>
+            <div class="exec-title-sub">System Management Sécurité CCF.TC.Kenitra</div>
         </div>
-        <div style="display: flex; align-items: center; gap: 15px;">
+        <div style="display: flex; align-items: center; gap: 18px;">
             <div class="exec-badge">{st.session_state['user_role']}</div>
-            <div style="color: white; font-size: 14px; font-weight: 600;">
+            <div style="color: #E2E8F0; font-size: 14px; font-weight: 600; background: rgba(255,255,255,0.05); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
                 👤 {st.session_state['current_user']}
             </div>
         </div>
@@ -214,14 +241,12 @@ else:
     menu = "🪪 Cartes d'Habilitation"
 
 st.sidebar.markdown("---")
-
-# عرض معلومات المستخدم (Code Utilisateur) في الشريط الجانبي بشكل واضح
-st.sidebar.markdown("### 👤 Session Actuelle")
+st.sidebar.markdown("### ⚙️ Session Active")
 st.sidebar.info(f"**Identifiant:** `{st.session_state['current_user']}`\n\n**Rôle:** {st.session_state['user_role']}")
 
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 
-# زر Déconnexion
+# زر Déconnexion احترافي
 if st.sidebar.button("🚪 Déconnexion", use_container_width=True):
     st.session_state["logged_in"] = False
     st.session_state["current_user"] = None
